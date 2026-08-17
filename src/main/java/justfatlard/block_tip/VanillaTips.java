@@ -29,7 +29,9 @@ public final class VanillaTips {
 	private VanillaTips() {}
 
 	public static void register() {
-		BlockTipApi.describe(VanillaTips::describe);
+		// Last of all. These are true of half the world, and anything a mod has
+		// gone to the trouble of registering is more specific than "it is dark".
+		BlockTipApi.describe(-100, VanillaTips::describe);
 	}
 
 	private static String describe(ServerLevel level, BlockPos pos, BlockState state, net.minecraft.server.level.ServerPlayer player) {

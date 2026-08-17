@@ -30,7 +30,9 @@ public final class BlockTipApi {
 	private BlockTipApi() {}
 
 	private static final Map<String, String> STATIC_LINES = new HashMap<>();
-	private static final List<TipProvider> PROVIDERS = new ArrayList<>();
+	private record Ranked(int priority, TipProvider provider) {}
+
+	private static final List<Ranked> PROVIDERS = new ArrayList<>();
 
 	/**
 	 * A fixed line for a block, by registry id.
@@ -44,7 +46,23 @@ public final class BlockTipApi {
 
 	/** A line worked out from the block itself. Return null to say nothing. */
 	public static void describe(TipProvider provider) {
-		PROVIDERS.add(provider);
+		describe(0, provider);
+	}
+
+	/**
+	 * The same, but said before or after other people's.
+	 *
+	 * <p>Needed because one block can be several things at once and there is only
+	 * one line: a chest can be the village's and also one you have already
+	 * emptied, and which of those is worth saying depends on which is news. Higher
+	 * priorities speak first, and the first answer wins.
+	 *
+	 * <p>Registration order would decide it otherwise, and registration order is
+	 * whichever mod happened to initialise first.
+	 */
+	public static void describe(int priority, TipProvider provider) {
+		PROVIDERS.add(new Ranked(priority, provider));
+		PROVIDERS.sort((a, b) -> Integer.compare(b.priority(), a.priority()));
 	}
 
 	/**
@@ -58,9 +76,9 @@ public final class BlockTipApi {
 		String fixed = STATIC_LINES.get(blockId);
 		if (fixed != null) return fixed;
 
-		for (TipProvider provider : PROVIDERS) {
+		for (Ranked ranked : PROVIDERS) {
 			try {
-				String line = provider.describe(level, pos, state, player);
+				String line = ranked.provider().describe(level, pos, state, player);
 				if (line != null && !line.isBlank()) return line;
 			} catch (Exception | LinkageError error) {
 				// A third party's provider is not allowed to break looking at things.
