@@ -33,6 +33,7 @@ public final class TipHud {
 	private static final String OVERLAY_ID = "block-tip:tip";
 	private static final String ICON_ID = "icon";
 	private static final String LABEL_ID = "label";
+	private static final String DETAIL_ID = "detail";
 
 	private static final int ICON_SIZE = 16;
 	private static final int GAP = 2;
@@ -42,6 +43,9 @@ public final class TipHud {
 
 	/** Clear of the hotbar and of the held item's own name, which lives just above it. */
 	private static final int ABOVE_HOTBAR = 60;
+
+	/** Dimmer than the name, because it is the footnote and not the answer. */
+	private static final String DETAIL_COLOR = "#FFA0A0A0";
 
 	/** What each player is currently being told, so it is only said once. */
 	private static final Map<UUID, Sighted> showing = new ConcurrentHashMap<>();
@@ -65,7 +69,8 @@ public final class TipHud {
 		} else {
 			PandoricalApi.hud().update(player, OVERLAY_ID, List.of(
 				new ComponentUpdate(ICON_ID, Map.of(ComponentType.PROP_ITEM_ID, sighted.itemId())),
-				new ComponentUpdate(LABEL_ID, Map.of(ComponentType.PROP_TEXT, sighted.nameKey()))
+				new ComponentUpdate(LABEL_ID, Map.of(ComponentType.PROP_TEXT, sighted.nameKey())),
+				new ComponentUpdate(DETAIL_ID, Map.of(ComponentType.PROP_TEXT, sighted.detail()))
 			));
 		}
 
@@ -86,6 +91,16 @@ public final class TipHud {
 				.bounds(0, ICON_SIZE + GAP, WIDTH, 9)
 				.prop(ComponentType.PROP_TEXT, sighted.nameKey())
 				.prop(ComponentType.PROP_ALIGN, "center")
+				.prop(ComponentType.PROP_SHADOW, "true")
+				.build())
+			// Always built, usually empty: a component that exists from the start can
+			// be updated in place, and one that appears later would need the whole
+			// card rebuilt every time a player looked at something unusual.
+			.component(new ComponentBuilder(DETAIL_ID, ComponentType.TEXT)
+				.bounds(0, ICON_SIZE + GAP + 10, WIDTH, 9)
+				.prop(ComponentType.PROP_TEXT, sighted.detail())
+				.prop(ComponentType.PROP_ALIGN, "center")
+				.prop(ComponentType.PROP_COLOR, DETAIL_COLOR)
 				.prop(ComponentType.PROP_SHADOW, "true")
 				.build());
 

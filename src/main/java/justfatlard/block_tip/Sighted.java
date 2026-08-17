@@ -26,14 +26,17 @@ import net.minecraft.world.phys.HitResult;
  *        in whatever language that client is set to rather than whatever
  *        language the server happens to think in, and plain text where there is
  *        not, which is how a named villager gets to be called by their name
+ * @param detail one line about what is odd about this particular thing, from
+ *        {@link justfatlard.block_tip.api.BlockTipApi}, or empty for the vast
+ *        majority of blocks about which there is nothing odd to say
  */
-public record Sighted(String itemId, String nameKey) {
+public record Sighted(String itemId, String nameKey, String detail) {
 
 	/** How far a tip will reach. A little past arm's length, so it answers before you arrive. */
 	private static final double RANGE = 6.0;
 
 	/** Nothing in range, or nothing worth naming. */
-	public static final Sighted NOTHING = new Sighted("", "");
+	public static final Sighted NOTHING = new Sighted("", "", "");
 
 	public boolean isNothing() {
 		return this.nameKey.isEmpty();
@@ -64,7 +67,7 @@ public record Sighted(String itemId, String nameKey) {
 
 		// Display name rather than type name, so a villager who has been given a
 		// name is introduced by it.
-		return new Sighted(icon, textOf(entity.getDisplayName()));
+		return new Sighted(icon, textOf(entity.getDisplayName()), "");
 	}
 
 	private static Sighted ofBlock(ServerPlayer player, net.minecraft.core.BlockPos pos) {
@@ -72,7 +75,13 @@ public record Sighted(String itemId, String nameKey) {
 		if (state.isAir()) return NOTHING;
 
 		Block block = state.getBlock();
-		return new Sighted(iconFor(block), textOf(block.getName()));
+		Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
+
+		String detail = justfatlard.block_tip.api.BlockTipApi.detailFor(
+			(net.minecraft.server.level.ServerLevel) player.level(), pos, state, player,
+			blockId == null ? "" : blockId.toString());
+
+		return new Sighted(iconFor(block), textOf(block.getName()), detail == null ? "" : detail);
 	}
 
 	/**

@@ -38,6 +38,22 @@ It is on by default and the preference is stored per player, as the list of peop
 - **Spectators get no card.** Looking through walls would name whatever is behind them.
 - **Reach is six blocks**, a little past arm's length, so it answers before you arrive.
 
+## Adding A Line
+
+A card names a thing. Some things also have a fact that cannot be seen by looking at them, and those are exactly the ones nobody learns: a crafter that keeps a template looks like a crafter, a piston set to push three looks like a piston.
+
+Any mod can add one line, compiled against Block Tip and guarded on it being present:
+
+```java
+// true wherever the block stands
+BlockTipApi.line("minecraft:crafter", "Keeps one of each - the pattern stays");
+
+// or worked out from the block in front of you
+BlockTipApi.describe((level, pos, state, player) -> ...);
+```
+
+One line, deliberately. The card stays readable because it is small; a mod that wants a paragraph wants a book.
+
 ## Pandorical
 
 Block Tip runs server-side, and Pandorical is a hard dependency (`fabric.mod.json`): the server will not load this mod without it. The card is a Pandorical HUD, which is the reason there is nothing to install on a client that already has Pandorical.
