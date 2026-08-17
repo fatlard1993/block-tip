@@ -38,6 +38,24 @@ It is on by default and the preference is stored per player, as the list of peop
 - **Spectators get no card.** Looking through walls would name whatever is behind them.
 - **Reach is six blocks**, a little past arm's length, so it answers before you arrive.
 
+## What It Says About Vanilla
+
+A handful of facts the game tracks and never shows, chosen because not knowing each one costs you something:
+
+| Looking at | It says |
+|------------|---------|
+| Any block you could stand on | **Dark enough for mobs to appear here**, when block light is zero |
+| Wheat, carrots, potatoes | **Ready to harvest** or **Still growing** |
+| Redstone dust | **Carrying 12 of 15** |
+| Waxed copper | **Waxed - it will not weather** |
+| A note block | **Bass, note 7 of 24** |
+| A hive | **3 inside, honey 4 of 5** |
+| Farmland | **Watered**, or **Dry - needs water within four blocks** |
+
+The spawn light is the one worth having. Mobs need block light of exactly zero, which nobody can check by eye: a torch two blocks too far leaves a square that looks lit and spawns creepers all night.
+
+It is checked last, because it is true of most of the world and would otherwise drown out everything specific.
+
 ## Adding A Line
 
 A card names a thing. Some things also have a fact that cannot be seen by looking at them, and those are exactly the ones nobody learns: a crafter that keeps a template looks like a crafter, a piston set to push three looks like a piston.

@@ -22,6 +22,7 @@ public class Main implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		TipCommand.register();
+		VanillaTips.register();
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (server.getTickCount() % INTERVAL_TICKS != 0) return;
