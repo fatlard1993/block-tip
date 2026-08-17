@@ -1,18 +1,20 @@
 # Block Tip
 
-A Minecraft Fabric mod. Names what you are looking at, for players who are still learning to read.
+A Minecraft Fabric mod. Names what you are looking at.
 
 ## What This Mod Does
 
-Look at a block. Its picture and its name appear just above your hotbar, where vanilla already writes the name of whatever you are holding, so nobody has to be taught where to look.
+Look at anything. Its picture and its name appear just above your hotbar, where vanilla already writes the name of whatever you are holding, so nobody has to be taught where to look.
+
+Blocks and creatures both. A creature is named by its display name, so a villager who has been given one is introduced by it.
 
 That is the whole mod.
 
 ## Why It Is This Small
 
-The suite it belongs to is thirty-nine mods deep, and a lot of that content goes undiscovered because nothing in the world says what anything is. The players it is aimed at are children sounding words out, so the picture is the point and the word is there to be learned from.
+The suite it belongs to is forty mods deep and most of that content is unlabelled: the game will happily show you a block it has never mentioned by name. "What is that" is a question everybody asks, whether the answer is a word they have not read before or a block they have not seen before.
 
-Which means what it deliberately does **not** show: tool tiers, harvest levels, mod names, block states, machine progress, container contents. Every one of those is a line between a child and the answer to "what is that".
+So the answer is a picture and a word, and nothing else. Not tool tiers, harvest levels, mod names, block states, machine progress or container contents. Every one of those is a line between the question and the answer, and the ones who need answering most are the ones with the least patience for lines.
 
 ## Turning It Off
 
@@ -30,6 +32,8 @@ It is on by default and the preference is stored per player, as the list of peop
 
 - **Names arrive in your own language.** The server sends a translation key, not words, so the client says it in whatever language that client is set to.
 - **Blocks with no item still get named.** Fire, portals, the top half of a door: those show the name with no picture, which beats a picture of the wrong thing.
+- **Creatures show their pick item.** A spawn egg for a mob, the boat for a boat: whatever middle-click would hand you, which is the picture of the thing by definition.
+- **Whichever is nearer wins.** A cow standing in front of a wall names the cow, the same rule your eyes are using.
 - **It costs almost nothing.** One raycast per player four times a second, and a packet only when the answer changes. Standing still and staring at a wall sends nothing at all.
 - **Spectators get no card.** Looking through walls would name whatever is behind them.
 - **Reach is six blocks**, a little past arm's length, so it answers before you arrive.
@@ -49,7 +53,7 @@ Install server-side alongside its declared dependencies (see `fabric.mod.json`);
 | File | Responsibility |
 |------|---------------|
 | `Main.java` | Entry point; the tick that asks what each player is looking at |
-| `Sighted.java` | The raycast, and reducing a block to a picture and a name |
+| `Sighted.java` | The raycast, and reducing a block or creature to a picture and a name |
 | `TipHud.java` | The card, and only sending it when the answer changes |
 | `TipPreferences.java` | Who opted out, kept in saved data |
 | `TipCommand.java` | `/blocktip` |

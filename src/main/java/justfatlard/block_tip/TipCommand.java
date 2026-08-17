@@ -13,8 +13,9 @@ import net.minecraft.server.level.ServerPlayer;
  * {@code /blocktip off} say which way.
  *
  * <p>Bare toggle first because that is what someone types when the tips are in
- * the way and they want them gone now. The explicit forms exist so that telling
- * a child "type slash blocktip on" cannot end with it off.
+ * the way and they want them gone now. The explicit forms exist because "type
+ * slash blocktip on" should not be able to end with it off, which is what a bare
+ * toggle does to anyone who cannot see the current state.
  */
 public final class TipCommand {
 	private TipCommand() {}

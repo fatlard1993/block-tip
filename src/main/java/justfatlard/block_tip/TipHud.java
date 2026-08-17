@@ -15,10 +15,10 @@ import net.minecraft.server.level.ServerPlayer;
  * The little card that names what you are looking at.
  *
  * <p>A picture and a word, nothing else. No tool tier, no harvest level, no
- * progress bar: the reader this is for is six and sounding the word out, and
- * every extra line is one more thing between them and the answer. The picture
- * sits above the word, centred, so it is the thing you read when the word is
- * still hard.
+ * progress bar: the question is "what is that", and every extra line is one more
+ * thing between it and the answer. The picture sits above the word, centred,
+ * because it is the half that answers fastest, and the half that still answers
+ * when the word is one you have not read before.
  *
  * <p>It sits just above the hotbar because that is where vanilla already writes
  * the name of whatever you are holding. Nobody has to be taught where to look.

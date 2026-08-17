@@ -3,8 +3,10 @@
 	"id": "block-tip",
 	"version": "${version}",
 	"name": "Block Tip",
-	"description": "Names what you are looking at, with its picture, for players who are still learning to read",
-	"authors": ["justfatlard"],
+	"description": "Names what you are looking at, block or creature, with its picture",
+	"authors": [
+		"justfatlard"
+	],
 	"contact": {
 		"sources": "https://github.com/fatlard1993/block-tip",
 		"issues": "https://github.com/fatlard1993/block-tip/issues"
@@ -12,7 +14,9 @@
 	"license": "MIT",
 	"environment": "*",
 	"entrypoints": {
-		"main": ["justfatlard.block_tip.Main"]
+		"main": [
+			"justfatlard.block_tip.Main"
+		]
 	},
 	"depends": {
 		"fabricloader": ">=0.19.3",

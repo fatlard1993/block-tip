@@ -5,21 +5,27 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 /**
  * What a player is looking at, reduced to the two things worth showing: a name
  * and a picture of it.
  *
- * @param itemId the item to draw as the icon, empty when the block has none
- * @param nameKey the block's translation key, so the client can say it in
- *        whatever language that client is set to rather than whatever language
- *        the server happens to think in
+ * @param itemId the item to draw as the icon, empty when there is nothing
+ *        sensible to draw
+ * @param nameKey a translation key where there is one, so the client can say it
+ *        in whatever language that client is set to rather than whatever
+ *        language the server happens to think in, and plain text where there is
+ *        not, which is how a named villager gets to be called by their name
  */
 public record Sighted(String itemId, String nameKey) {
 
@@ -34,14 +40,39 @@ public record Sighted(String itemId, String nameKey) {
 	}
 
 	public static Sighted inFrontOf(ServerPlayer player) {
-		HitResult hit = player.pick(RANGE, 0.0F, false);
-		if (hit.getType() != HitResult.Type.BLOCK) return NOTHING;
+		// One call covers both: it clips against blocks, then checks whether an
+		// entity stood in front of the block it found. Whichever is nearer wins,
+		// which is the same rule the player's own eyes are using.
+		HitResult hit = ProjectileUtil.getHitResultOnViewVector(player, Sighted::worthNaming, RANGE);
 
-		BlockState state = player.level().getBlockState(((BlockHitResult) hit).getBlockPos());
+		return switch (hit.getType()) {
+			case ENTITY -> ofEntity(((EntityHitResult) hit).getEntity());
+			case BLOCK -> ofBlock(player, ((BlockHitResult) hit).getBlockPos());
+			default -> NOTHING;
+		};
+	}
+
+	private static boolean worthNaming(Entity entity) {
+		return !entity.isSpectator() && entity.isPickable();
+	}
+
+	private static Sighted ofEntity(Entity entity) {
+		// The pick item is what middle-click would hand you: a spawn egg for a
+		// mob, the boat for a boat. Exactly the picture of the thing.
+		ItemStack pick = entity.getPickResult();
+		String icon = pick == null || pick.isEmpty() ? "" : idOf(pick.getItem());
+
+		// Display name rather than type name, so a villager who has been given a
+		// name is introduced by it.
+		return new Sighted(icon, textOf(entity.getDisplayName()));
+	}
+
+	private static Sighted ofBlock(ServerPlayer player, net.minecraft.core.BlockPos pos) {
+		BlockState state = player.level().getBlockState(pos);
 		if (state.isAir()) return NOTHING;
 
 		Block block = state.getBlock();
-		return new Sighted(iconFor(block), nameKeyOf(block));
+		return new Sighted(iconFor(block), textOf(block.getName()));
 	}
 
 	/**
@@ -51,19 +82,20 @@ public record Sighted(String itemId, String nameKey) {
 	 */
 	private static String iconFor(Block block) {
 		Item item = block.asItem();
-		if (item == Items.AIR) return "";
+		return item == Items.AIR ? "" : idOf(item);
+	}
 
+	private static String idOf(Item item) {
 		Identifier id = BuiltInRegistries.ITEM.getKey(item);
 		return id == null ? "" : id.toString();
 	}
 
 	/**
-	 * The translation key rather than the translated words. Read off the name
-	 * component instead of calling getDescriptionId, because a few blocks build
-	 * their own name and that is the one worth showing.
+	 * The translation key where there is one, rather than the translated words,
+	 * so the client says it in its own language. Anything else, including a name
+	 * somebody typed, travels as it reads.
 	 */
-	private static String nameKeyOf(Block block) {
-		Component name = block.getName();
+	private static String textOf(Component name) {
 		if (name.getContents() instanceof TranslatableContents translatable) {
 			return translatable.getKey();
 		}
