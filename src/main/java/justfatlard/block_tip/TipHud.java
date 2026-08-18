@@ -58,10 +58,17 @@ public final class TipHud {
 	/** Down from the top edge, clear of the effect icons that live up there. */
 	private static final int BELOW_TOP = 8;
 
-	/** Vanilla's own tooltip palette, so the card looks like it came with the game. */
-	private static final String PANEL_BACKGROUND = "#F0100010";
-	private static final String PANEL_BORDER_LIGHT = "#505000FF";
-	private static final String PANEL_BORDER_DARK = "#5028007F";
+	/**
+	 * Vanilla's tooltip palette, thinned out.
+	 *
+	 * <p>A tooltip is opaque because it appears where you clicked and leaves again.
+	 * This one sits over the middle of the screen for as long as you are looking at
+	 * anything, so it has to let the world through: the leading byte is alpha, and
+	 * vanilla's F0 is very nearly solid.
+	 */
+	private static final String PANEL_BACKGROUND = "#A0100010";
+	private static final String PANEL_BORDER_LIGHT = "#405000FF";
+	private static final String PANEL_BORDER_DARK = "#4028007F";
 
 	/** Dimmer than the name, because it is the footnote and not the answer. */
 	private static final String DETAIL_COLOR = "#FFA0A0A0";
