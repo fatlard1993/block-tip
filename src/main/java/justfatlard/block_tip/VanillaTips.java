@@ -62,7 +62,7 @@ public final class VanillaTips {
 	private static String crop(BlockState state) {
 		if (!(state.getBlock() instanceof CropBlock cropBlock)) return null;
 
-		return cropBlock.isMaxAge(state) ? "Ready to harvest" : "Still growing";
+		return cropBlock.isMaxAge(state) ? "Ripe" : "Growing";
 	}
 
 	/** The number redstone is actually carrying, which nothing anywhere displays. */
@@ -70,7 +70,7 @@ public final class VanillaTips {
 		if (!state.hasProperty(BlockStateProperties.POWER)) return null;
 
 		int power = state.getValue(BlockStateProperties.POWER);
-		return power == 0 ? "Carrying nothing" : "Carrying " + power + " of 15";
+		return power == 0 ? "No signal" : "Signal " + power + " of 15";
 	}
 
 	/**
@@ -79,7 +79,7 @@ public final class VanillaTips {
 	 */
 	private static String copper(BlockState state) {
 		if (HoneycombItem.WAX_OFF_BY_BLOCK.get().containsKey(state.getBlock())) {
-			return "Waxed - it will not weather";
+			return "Waxed";
 		}
 		return null;
 	}
@@ -90,7 +90,7 @@ public final class VanillaTips {
 
 		NoteBlockInstrument instrument = state.getValue(BlockStateProperties.NOTEBLOCK_INSTRUMENT);
 		int note = state.getValue(BlockStateProperties.NOTE);
-		return instrument.getSerializedName() + ", note " + note + " of 24";
+		return instrument.getSerializedName() + ", note " + note;
 	}
 
 	/** How angry opening this is about to make things. */
@@ -101,14 +101,14 @@ public final class VanillaTips {
 		int bees = blockEntity instanceof BeehiveBlockEntity beehive ? beehive.getOccupantCount() : 0;
 		int honey = state.getValue(BlockStateProperties.LEVEL_HONEY);
 
-		String honeyPart = honey >= 5 ? "full of honey" : "honey " + honey + " of 5";
-		return bees == 0 ? honeyPart : bees + " inside, " + honeyPart;
+		String honeyPart = honey >= 5 ? "honey full" : "honey " + honey + "/5";
+		return bees == 0 ? honeyPart : bees + " bees, " + honeyPart;
 	}
 
 	private static String farmland(BlockState state) {
 		if (!state.hasProperty(BlockStateProperties.MOISTURE)) return null;
 
-		return state.getValue(BlockStateProperties.MOISTURE) > 0 ? "Watered" : "Dry - needs water within four blocks";
+		return state.getValue(BlockStateProperties.MOISTURE) > 0 ? "Watered" : "Dry";
 	}
 
 	/**
@@ -125,6 +125,6 @@ public final class VanillaTips {
 		if (!level.getBlockState(above).isAir()) return null;
 
 		int blockLight = level.getBrightness(LightLayer.BLOCK, above);
-		return blockLight == 0 ? "Dark enough for mobs to appear here" : null;
+		return blockLight == 0 ? "Mobs can spawn here" : null;
 	}
 }

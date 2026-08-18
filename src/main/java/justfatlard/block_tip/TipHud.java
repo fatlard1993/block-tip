@@ -38,13 +38,19 @@ public final class TipHud {
 
 	private static final int ICON_SIZE = 16;
 
-	/** Wide enough for a long block name and a sentence of detail beneath it. */
-	private static final int WIDTH = 190;
-	private static final int PADDING = 5;
+	/**
+	 * Small. It sits over the middle of the screen for as long as you are looking
+	 * at anything, so it has to be the size of a label rather than a dialog.
+	 */
+	private static final int WIDTH = 132;
+	private static final int PADDING = 4;
 
-	/** Icon on the left, words to the right of it, the way a tooltip reads. */
-	private static final int TEXT_X = PADDING + ICON_SIZE + 6;
-	private static final int TEXT_WIDTH = WIDTH - TEXT_X - PADDING;
+	/** Icon on the left, name beside it, the way a tooltip reads. */
+	private static final int NAME_X = PADDING + ICON_SIZE + 4;
+	private static final int NAME_WIDTH = WIDTH - NAME_X - PADDING;
+
+	/** The detail sits under both, using the full width: it is the longer half. */
+	private static final int DETAIL_WIDTH = WIDTH - PADDING * 2;
 
 	private static final int LINE = 10;
 	private static final int HEIGHT_ONE_LINE = PADDING * 2 + ICON_SIZE;
@@ -99,7 +105,7 @@ public final class TipHud {
 
 		// Vertically centred against the icon when it is the only line, and sat on
 		// the icon's top edge when a second line has to fit beneath it.
-		int labelY = hasDetail ? PADDING + 1 : PADDING + (ICON_SIZE - 9) / 2;
+		int labelY = PADDING + (ICON_SIZE - 9) / 2;
 
 		HudBuilder hud = new HudBuilder(OVERLAY_ID)
 			.anchor("top_center")
@@ -115,16 +121,22 @@ public final class TipHud {
 				.prop(ComponentType.PROP_ITEM_ID, sighted.itemId())
 				.build())
 			.component(new ComponentBuilder(LABEL_ID, ComponentType.TEXT)
-				.bounds(TEXT_X, labelY, TEXT_WIDTH, 9)
+				.bounds(NAME_X, labelY, NAME_WIDTH, 9)
 				.prop(ComponentType.PROP_TEXT_KEY, sighted.nameKey())
+				// Wrapped to one line so a long name is cut short rather than running
+				// out past the panel, which is what made the card look off-centre.
+				.prop(ComponentType.PROP_WRAP_WIDTH, String.valueOf(NAME_WIDTH))
+				.prop(ComponentType.PROP_MAX_LINES, "1")
 				.prop(ComponentType.PROP_SHADOW, "true")
 				.build())
 			// Always built, usually empty: a component that exists from the start can
 			// be updated in place, and one that appeared later would need the whole
 			// card rebuilt every time a player looked at something unusual.
 			.component(new ComponentBuilder(DETAIL_ID, ComponentType.TEXT)
-				.bounds(TEXT_X, PADDING + LINE + 2, TEXT_WIDTH, 9)
+				.bounds(PADDING, PADDING + ICON_SIZE + 1, DETAIL_WIDTH, 9)
 				.prop(ComponentType.PROP_TEXT_KEY, sighted.detail())
+				.prop(ComponentType.PROP_WRAP_WIDTH, String.valueOf(DETAIL_WIDTH))
+				.prop(ComponentType.PROP_MAX_LINES, "1")
 				.prop(ComponentType.PROP_COLOR, DETAIL_COLOR)
 				.prop(ComponentType.PROP_SHADOW, "true")
 				.build());
