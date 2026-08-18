@@ -42,17 +42,17 @@ public final class TipHud {
 	 * Small. It sits over the middle of the screen for as long as you are looking
 	 * at anything, so it has to be the size of a label rather than a dialog.
 	 */
-	private static final int WIDTH = 132;
-	private static final int PADDING = 4;
+	private static final int WIDTH = 108;
+	private static final int PADDING = 3;
 
 	/** Icon on the left, name beside it, the way a tooltip reads. */
-	private static final int NAME_X = PADDING + ICON_SIZE + 4;
+	private static final int NAME_X = PADDING + ICON_SIZE + 3;
 	private static final int NAME_WIDTH = WIDTH - NAME_X - PADDING;
 
 	/** The detail sits under both, using the full width: it is the longer half. */
 	private static final int DETAIL_WIDTH = WIDTH - PADDING * 2;
 
-	private static final int LINE = 10;
+	private static final int LINE = 9;
 	private static final int HEIGHT_ONE_LINE = PADDING * 2 + ICON_SIZE;
 
 	/** Down from the top edge, clear of the effect icons that live up there. */
@@ -133,7 +133,7 @@ public final class TipHud {
 			// be updated in place, and one that appeared later would need the whole
 			// card rebuilt every time a player looked at something unusual.
 			.component(new ComponentBuilder(DETAIL_ID, ComponentType.TEXT)
-				.bounds(PADDING, PADDING + ICON_SIZE + 1, DETAIL_WIDTH, 9)
+				.bounds(PADDING, PADDING + ICON_SIZE, DETAIL_WIDTH, 9)
 				.prop(ComponentType.PROP_TEXT_KEY, sighted.detail())
 				.prop(ComponentType.PROP_WRAP_WIDTH, String.valueOf(DETAIL_WIDTH))
 				.prop(ComponentType.PROP_MAX_LINES, "1")
