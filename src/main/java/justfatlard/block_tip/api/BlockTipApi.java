@@ -30,6 +30,7 @@ public final class BlockTipApi {
 	private BlockTipApi() {}
 
 	private static final Map<String, String> STATIC_LINES = new HashMap<>();
+	private static final Map<String, String> ICON_OVERRIDES = new HashMap<>();
 	private record Ranked(int priority, TipProvider provider) {}
 
 	private static final List<Ranked> PROVIDERS = new ArrayList<>();
@@ -42,6 +43,26 @@ public final class BlockTipApi {
 	 */
 	public static void line(String blockId, String text) {
 		STATIC_LINES.put(blockId, text);
+	}
+
+	/**
+	 * The item to draw for a block that has none of its own.
+	 *
+	 * <p>Most blocks are their own picture, because most blocks are something you
+	 * can hold. A block that only ever exists because worldgen placed it has no
+	 * item at all, and the card was drawing an empty square where the answer
+	 * should be.
+	 *
+	 * @param blockId e.g. {@code "better-trees-justfatlard:oak_leaf_stairs"}
+	 * @param itemId  what to show instead, e.g. {@code "minecraft:oak_leaves"}
+	 */
+	public static void icon(String blockId, String itemId) {
+		ICON_OVERRIDES.put(blockId, itemId);
+	}
+
+	/** @hidden used by block-tip itself */
+	public static String iconOverride(String blockId) {
+		return ICON_OVERRIDES.get(blockId);
 	}
 
 	/** A line worked out from the block itself. Return null to say nothing. */

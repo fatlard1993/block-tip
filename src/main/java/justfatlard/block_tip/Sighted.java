@@ -77,11 +77,16 @@ public record Sighted(String itemId, String nameKey, String detail) {
 		Block block = state.getBlock();
 		Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
 
+		String id = blockId == null ? "" : blockId.toString();
 		String detail = justfatlard.block_tip.api.BlockTipApi.detailFor(
-			(net.minecraft.server.level.ServerLevel) player.level(), pos, state, player,
-			blockId == null ? "" : blockId.toString());
+			(net.minecraft.server.level.ServerLevel) player.level(), pos, state, player, id);
 
-		return new Sighted(iconFor(block), textOf(block.getName()), detail == null ? "" : detail);
+		// A mod's stand-in wins: it is only ever set for blocks that have no item
+		// of their own, where the alternative is an empty square.
+		String override = justfatlard.block_tip.api.BlockTipApi.iconOverride(id);
+		String icon = override != null ? override : iconFor(block);
+
+		return new Sighted(icon, textOf(block.getName()), detail == null ? "" : detail);
 	}
 
 	/**
