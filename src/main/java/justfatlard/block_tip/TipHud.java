@@ -32,17 +32,30 @@ public final class TipHud {
 
 	private static final String OVERLAY_ID = "block-tip:tip";
 	private static final String ICON_ID = "icon";
+	private static final String PANEL_ID = "panel";
 	private static final String LABEL_ID = "label";
 	private static final String DETAIL_ID = "detail";
 
 	private static final int ICON_SIZE = 16;
-	private static final int GAP = 2;
 
-	/** Wide enough for a long block name; the card has no background, so slack costs nothing visually. */
-	private static final int WIDTH = 200;
+	/** Wide enough for a long block name and a sentence of detail beneath it. */
+	private static final int WIDTH = 190;
+	private static final int PADDING = 5;
 
-	/** Clear of the hotbar and of the held item's own name, which lives just above it. */
-	private static final int ABOVE_HOTBAR = 60;
+	/** Icon on the left, words to the right of it, the way a tooltip reads. */
+	private static final int TEXT_X = PADDING + ICON_SIZE + 6;
+	private static final int TEXT_WIDTH = WIDTH - TEXT_X - PADDING;
+
+	private static final int LINE = 10;
+	private static final int HEIGHT_ONE_LINE = PADDING * 2 + ICON_SIZE;
+
+	/** Down from the top edge, clear of the effect icons that live up there. */
+	private static final int BELOW_TOP = 8;
+
+	/** Vanilla's own tooltip palette, so the card looks like it came with the game. */
+	private static final String PANEL_BACKGROUND = "#F0100010";
+	private static final String PANEL_BORDER_LIGHT = "#505000FF";
+	private static final String PANEL_BORDER_DARK = "#5028007F";
 
 	/** Dimmer than the name, because it is the footnote and not the answer. */
 	private static final String DETAIL_COLOR = "#FFA0A0A0";
@@ -64,13 +77,16 @@ public final class TipHud {
 
 		if (sighted.equals(current)) return;
 
-		if (current == null) {
+		// The panel is sized when it is built, so a card that gains or loses its
+		// second line has to be rebuilt rather than updated. Only the shape matters:
+		// the words changing is what update() is for.
+		if (current == null || current.detail().isBlank() != sighted.detail().isBlank()) {
 			show(player, sighted);
 		} else {
 			PandoricalApi.hud().update(player, OVERLAY_ID, List.of(
 				new ComponentUpdate(ICON_ID, Map.of(ComponentType.PROP_ITEM_ID, sighted.itemId())),
-				new ComponentUpdate(LABEL_ID, Map.of(ComponentType.PROP_TEXT, sighted.nameKey())),
-				new ComponentUpdate(DETAIL_ID, Map.of(ComponentType.PROP_TEXT, sighted.detail()))
+				new ComponentUpdate(LABEL_ID, Map.of(ComponentType.PROP_TEXT_KEY, sighted.nameKey())),
+				new ComponentUpdate(DETAIL_ID, Map.of(ComponentType.PROP_TEXT_KEY, sighted.detail()))
 			));
 		}
 
@@ -78,28 +94,37 @@ public final class TipHud {
 	}
 
 	private static void show(ServerPlayer player, Sighted sighted) {
-		// bottom_center reads offsetX as the card's left edge relative to the screen
-		// centre, so half the width to the left puts the card dead centre.
+		boolean hasDetail = !sighted.detail().isBlank();
+		int height = hasDetail ? HEIGHT_ONE_LINE + LINE : HEIGHT_ONE_LINE;
+
+		// Vertically centred against the icon when it is the only line, and sat on
+		// the icon's top edge when a second line has to fit beneath it.
+		int labelY = hasDetail ? PADDING + 1 : PADDING + (ICON_SIZE - 9) / 2;
+
 		HudBuilder hud = new HudBuilder(OVERLAY_ID)
-			.anchor("bottom_center")
-			.offset(-WIDTH / 2, ABOVE_HOTBAR)
+			.anchor("top_center")
+			.offset(0, BELOW_TOP)
+			.component(new ComponentBuilder(PANEL_ID, ComponentType.PANEL)
+				.bounds(0, 0, WIDTH, height)
+				.prop(ComponentType.PROP_BACKGROUND, PANEL_BACKGROUND)
+				.prop(ComponentType.PROP_BORDER_LIGHT, PANEL_BORDER_LIGHT)
+				.prop(ComponentType.PROP_BORDER_DARK, PANEL_BORDER_DARK)
+				.build())
 			.component(new ComponentBuilder(ICON_ID, ComponentType.ITEM_ICON)
-				.bounds((WIDTH - ICON_SIZE) / 2, 0, ICON_SIZE, ICON_SIZE)
+				.bounds(PADDING, PADDING, ICON_SIZE, ICON_SIZE)
 				.prop(ComponentType.PROP_ITEM_ID, sighted.itemId())
 				.build())
 			.component(new ComponentBuilder(LABEL_ID, ComponentType.TEXT)
-				.bounds(0, ICON_SIZE + GAP, WIDTH, 9)
-				.prop(ComponentType.PROP_TEXT, sighted.nameKey())
-				.prop(ComponentType.PROP_ALIGN, "center")
+				.bounds(TEXT_X, labelY, TEXT_WIDTH, 9)
+				.prop(ComponentType.PROP_TEXT_KEY, sighted.nameKey())
 				.prop(ComponentType.PROP_SHADOW, "true")
 				.build())
 			// Always built, usually empty: a component that exists from the start can
-			// be updated in place, and one that appears later would need the whole
+			// be updated in place, and one that appeared later would need the whole
 			// card rebuilt every time a player looked at something unusual.
 			.component(new ComponentBuilder(DETAIL_ID, ComponentType.TEXT)
-				.bounds(0, ICON_SIZE + GAP + 10, WIDTH, 9)
-				.prop(ComponentType.PROP_TEXT, sighted.detail())
-				.prop(ComponentType.PROP_ALIGN, "center")
+				.bounds(TEXT_X, PADDING + LINE + 2, TEXT_WIDTH, 9)
+				.prop(ComponentType.PROP_TEXT_KEY, sighted.detail())
 				.prop(ComponentType.PROP_COLOR, DETAIL_COLOR)
 				.prop(ComponentType.PROP_SHADOW, "true")
 				.build());
