@@ -18,6 +18,7 @@
       "justfatlard.block_tip.Main"
     ]
   },
+  "icon": "assets/block-tip/icon.png",
   "depends": {
     "fabricloader": ">=0.19.3",
     "fabric-api": "*",
