@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "justfatlard.block_tip.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "DestroyProgressMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
