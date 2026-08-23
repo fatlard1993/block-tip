@@ -143,6 +143,11 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		// The bar over the top of the screen is a health bar with a number's worth of precision
 		// already. Printing the same health under it would be the card's only contribution being
 		// the thing that was never missing.
+		// First, because the card draws the picture belonging to the tip that starts the row and
+		// this is the only entity tip that has one.
+		BlockTipApi.Tip feed = Breeding.of(entity);
+		if (feed != null) details.add(feed);
+
 		String health = ownBar ? "" : healthOf(entity);
 		if (!health.isEmpty()) details.add(BlockTipApi.Tip.of(health));
 
