@@ -10,7 +10,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -59,14 +58,18 @@ import net.minecraft.world.phys.Vec3;
  *        nothing worth showing
  */
 public record Sighted(String blockId, String itemId, String nameKey, List<BlockTipApi.Tip> details,
-		boolean spawnable, boolean underBossBar, String modName, Advice.Mark mark, String toolItem) {
+		boolean spawnable, boolean underBossBar, String modName, Advice.Mark mark, String toolItem,
+		float health) {
+
+	/** What {@link #health} carries for anything that cannot be hurt. */
+	public static final float NO_HEALTH = -1F;
 
 	/** How far a tip will reach. A little past arm's length, so it answers before you arrive. */
 	private static final double RANGE = 6.0;
 
 	/** Nothing in range, or nothing worth naming. */
 	public static final Sighted NOTHING =
-		new Sighted("", "", "", List.of(), false, false, "", Advice.Mark.NONE, "");
+		new Sighted("", "", "", List.of(), false, false, "", Advice.Mark.NONE, "", NO_HEALTH);
 
 	public boolean isNothing() {
 		return this.nameKey.isEmpty();
@@ -127,7 +130,7 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		if (ownBar && details.isEmpty() && modName.isEmpty()) return NOTHING;
 
 		return new Sighted("", icon, textOf(entity.getDisplayName()), details, false, underBar,
-			modName, Advice.Mark.NONE, "");
+			modName, Advice.Mark.NONE, "", healthFractionOf(entity));
 	}
 
 	/**
@@ -147,9 +150,6 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		// this is the only entity tip that has one.
 		BlockTipApi.Tip feed = Breeding.of(entity);
 		if (feed != null) details.add(feed);
-
-		String health = ownBar ? "" : healthOf(entity);
-		if (!health.isEmpty()) details.add(BlockTipApi.Tip.of(health));
 
 		String added = BlockTipApi.detailForEntity(entity, player);
 		if (added != null && !added.isBlank()) details.add(BlockTipApi.Tip.of(added));
@@ -172,16 +172,16 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 	}
 
 	/**
-	 * How much fight is left in it, for anything that can be fought.
+	 * How much fight is left, as a fraction, for the bar along the bottom of the card.
 	 *
-	 * <p>Rounded up, so a mob one blow from death never reads as already dead, and shown against its
-	 * maximum because the number alone says nothing: eight is a wounded zombie and a healthy bat.
-	 * Boats and item frames have no health and get the blank line every block gets.
+	 * <p>{@link #NO_HEALTH} for anything that cannot be hurt, which is how the card knows to leave
+	 * the bottom edge to the break bar instead.
 	 */
-	private static String healthOf(Entity entity) {
-		if (!(entity instanceof LivingEntity living)) return "";
-
-		return Mth.ceil(living.getHealth()) + "/" + Mth.ceil(living.getMaxHealth()) + " \u2665";
+	private static float healthFractionOf(Entity entity) {
+		if (!(entity instanceof LivingEntity living)) return NO_HEALTH;
+		float max = living.getMaxHealth();
+		if (max <= 0F) return NO_HEALTH;
+		return Math.clamp(living.getHealth() / max, 0F, 1F);
 	}
 
 	private static Sighted ofBlock(ServerPlayer player, BlockPos pos) {
@@ -207,7 +207,7 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 
 		return new Sighted(id, icon, textOf(block.getName()), tips,
 			VanillaTips.mobsCanSpawnOn(level, pos, state), BossBars.anyShowing(player), ModNames.of(id),
-			advice.mark(), advice.toolItem());
+			advice.mark(), advice.toolItem(), NO_HEALTH);
 	}
 
 	/**

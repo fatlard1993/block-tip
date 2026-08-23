@@ -167,6 +167,16 @@ public final class TipHud {
 	private static final String PROGRESS_ID = "progress";
 	private static final int PROGRESS_HEIGHT = 2;
 	private static final String PROGRESS_COLOR = "#FFE0E0E0";
+	/**
+	 * The same two pixels, red, when the thing in front of you can bleed.
+	 *
+	 * <p>One edge and two meanings, because you are never mining a block and facing a mob at the
+	 * same moment: the bar says how far through the block you are, or how much fight is left in
+	 * the animal, and which one it is answers itself from what you are looking at. Red carries
+	 * that on its own, which is why the number that used to sit in the detail row is gone - the
+	 * card already declined to print health under a boss bar for the same reason.
+	 */
+	private static final String HEALTH_COLOR = "#FFD03A3A";
 	private static final String PANEL_BORDER_NONE = "none";
 
 	/** Dimmer than the name, because it is the footnote and not the answer. */
@@ -264,6 +274,9 @@ public final class TipHud {
 		UUID id = player.getUUID();
 		Sighted current = showing.get(id);
 		if (current == null) return;
+		// The bottom edge is the mob's health while one is in front of you, and the two would
+		// otherwise take turns writing to it every tick.
+		if (current.health() >= 0F) return;
 
 		int width = Math.round(cardWidth(current) * fraction);
 		Integer last = progressWidth.get(id);
@@ -312,11 +325,18 @@ public final class TipHud {
 					ComponentType.PROP_TEXT, spawnText(sighted))),
 				new ComponentUpdate(MARK_ID, Map.of(
 					ComponentType.PROP_TEXT, markText(sighted),
-					ComponentType.PROP_COLOR, markColor(sighted)))
+					ComponentType.PROP_COLOR, markColor(sighted))),
+				new ComponentUpdate(PROGRESS_ID, Map.of(
+					ComponentType.PROP_WIDTH, String.valueOf(barWidth(sighted))))
 			));
 		}
 
 		showing.put(id, sighted);
+	}
+
+	/** How much of the bottom edge is filled: health for a mob, nothing for a block. */
+	private static int barWidth(Sighted sighted) {
+		return sighted.health() < 0F ? 0 : Math.round(cardWidth(sighted) * sighted.health());
 	}
 
 	/**
@@ -327,6 +347,8 @@ public final class TipHud {
 	 */
 	private static String shapeOf(Sighted sighted) {
 		return (hasDetail(sighted) ? "d" : "-")
+			// The bar's colour is set when the card is built, so block and mob are different shapes
+			+ (sighted.health() >= 0F ? "h" : "-")
 			+ (detailIcon(sighted).isBlank() ? "-" : "p")
 			+ (sighted.underBossBar() ? "b" : "-")
 			+ (sighted.modName().isBlank() ? "-" : "m")
@@ -538,8 +560,9 @@ public final class TipHud {
 			// Always laid down, even at nothing wide: a component that does not exist is one no
 			// later update can reach, and this one is at nothing wide almost all of the time.
 			.component(new ComponentBuilder(PROGRESS_ID, ComponentType.SPRITE)
-				.bounds(0, height - PROGRESS_HEIGHT, 0, PROGRESS_HEIGHT)
-				.prop(ComponentType.PROP_COLOR, PROGRESS_COLOR)
+				.bounds(0, height - PROGRESS_HEIGHT, barWidth(sighted), PROGRESS_HEIGHT)
+				.prop(ComponentType.PROP_COLOR,
+					sighted.health() >= 0F ? HEALTH_COLOR : PROGRESS_COLOR)
 				// Pushed every tick, so it should land where it is told rather than spend three
 				// ticks easing toward a width that has already moved on.
 				.prop(ComponentType.PROP_INTERP_TICKS, "1")
