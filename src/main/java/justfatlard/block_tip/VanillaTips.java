@@ -9,13 +9,19 @@ import net.minecraft.world.Container;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 
 /**
@@ -80,9 +86,32 @@ public final class VanillaTips {
 	 * @return -1 for anything that does not grow in stages
 	 */
 	static int growthPercent(BlockState state) {
-		if (!(state.getBlock() instanceof CropBlock crop)) return -1;
+		Block block = state.getBlock();
 
-		return Math.round(crop.getAge(state) * 100.0F / crop.getMaxAge());
+		if (block instanceof CropBlock crop) {
+			return Math.round(crop.getAge(state) * 100.0F / crop.getMaxAge());
+		}
+
+		// Four crops that ripen in stages exactly like wheat does and are not CropBlock: a stem is
+		// a VegetationBlock, wart and berries are bushes, cocoa hangs off a log. Asking the class
+		// hierarchy left every one of them silent, which is worst for the stem - the one crop whose
+		// stage is genuinely hard to read, since it looks much the same until the fruit appears.
+		if (block instanceof StemBlock) return percentOf(state, StemBlock.AGE, StemBlock.MAX_AGE);
+		if (block instanceof NetherWartBlock) {
+			return percentOf(state, NetherWartBlock.AGE, NetherWartBlock.MAX_AGE);
+		}
+		if (block instanceof CocoaBlock) return percentOf(state, CocoaBlock.AGE, CocoaBlock.MAX_AGE);
+		if (block instanceof SweetBerryBushBlock) {
+			return percentOf(state, SweetBerryBushBlock.AGE, SweetBerryBushBlock.MAX_AGE);
+		}
+
+		// An attached stem is deliberately absent: it has already fruited, and the melon sitting
+		// next to it says so better than a number would.
+		return -1;
+	}
+
+	private static int percentOf(BlockState state, IntegerProperty age, int maxAge) {
+		return Math.round(state.getValue(age) * 100.0F / maxAge);
 	}
 
 	private static String crop(BlockState state) {
