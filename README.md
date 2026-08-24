@@ -153,9 +153,9 @@ BlockTipApi.describeEntity((entity, player) -> ...);
 BlockTipApi.illustrate((level, pos, state, player) -> new BlockTipApi.Tip("Keeps a template", "minecraft:bread"));
 ```
 
-The illustrated form draws an item at the head of the detail line, in the same column as the block's own picture. [Crafter Template](https://github.com/justfatlard/crafter-template) uses it to show what a crafter is loaded to make: a picture of the loaf beats nine ingredients the player has to solve in their head, and it is the same width whatever the recipe. The picture belongs to the line that starts the row: it is read off the winning tip rather than kept in a field of its own, so it cannot be drawn at the head of somebody else's sentence.
+The illustrated form draws an item at the head of the detail line, in the same column as the block's own picture. [Crafter Template](https://github.com/fatlard1993/crafter-template) uses it to show what a crafter is loaded to make: a picture of the loaf beats nine ingredients the player has to solve in their head, and it is the same width whatever the recipe. The picture belongs to the line that starts the row: it is read off the winning tip rather than kept in a field of its own, so it cannot be drawn at the head of somebody else's sentence.
 
-The entity form is for the same silence in a thing that moves. [Player Trade](https://github.com/justfatlard/player-trade) uses it to say *"Sneak-click to trade"* while you are looking at somebody: the gesture is that mod's only front door, and nothing else in the game hints at it. An entity line is added to the health rather than replacing it, since the two answer different questions and there is only ever the one row.
+The entity form is for the same silence in a thing that moves. [Player Trade](https://github.com/fatlard1993/player-trade) uses it to say *"Sneak-click to trade"* while you are looking at somebody: the gesture is that mod's only front door, and nothing else in the game hints at it. An entity line is added to the health rather than replacing it, since the two answer different questions and there is only ever the one row.
 
 A mod compiling against this should declare the version it needs as `breaks`, not only `suggests`:
 
