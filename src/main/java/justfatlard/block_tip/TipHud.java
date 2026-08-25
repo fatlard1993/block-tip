@@ -39,6 +39,8 @@ public final class TipHud {
 	private static final String LABEL_ID = "label";
 	private static final String DETAIL_ID = "detail";
 	private static final String DETAIL_ICON_ID = "detail-icon";
+	private static final String EXCHANGE_ARROW_ID = "exchange-arrow";
+	private static final String RESULT_ICON_ID = "result-icon";
 	private static final String MARK_ID = "mark";
 	private static final String SPAWN_ID = "spawn";
 	private static final String SOURCE_ID = "source";
@@ -318,6 +320,10 @@ public final class TipHud {
 					detailOf(sighted).text())),
 				new ComponentUpdate(DETAIL_ICON_ID, Map.of(
 					ComponentType.PROP_ITEM_ID, detailIcon(sighted))),
+				new ComponentUpdate(EXCHANGE_ARROW_ID, Map.of(
+					ComponentType.PROP_TEXT, resultIcon(sighted).isBlank() ? "" : EXCHANGE_ARROW)),
+				new ComponentUpdate(RESULT_ICON_ID, Map.of(
+					ComponentType.PROP_ITEM_ID, resultIcon(sighted))),
 				new ComponentUpdate(SOURCE_ID, Map.of(ComponentType.PROP_TEXT, sighted.modName())),
 				new ComponentUpdate(TOOL_ID, Map.of(
 					ComponentType.PROP_ITEM_ID, hasToolIcon(sighted) ? sighted.toolItem() : "")),
@@ -350,6 +356,7 @@ public final class TipHud {
 			// The bar's colour is set when the card is built, so block and mob are different shapes
 			+ (sighted.health() >= 0F ? "h" : "-")
 			+ (detailIcon(sighted).isBlank() ? "-" : "p")
+			+ (resultIcon(sighted).isBlank() ? "-" : "x")
 			+ (sighted.underBossBar() ? "b" : "-")
 			+ (sighted.modName().isBlank() ? "-" : "m")
 			+ (hasToolIcon(sighted) ? "i" : "-")
@@ -383,6 +390,26 @@ public final class TipHud {
 		return sighted.details().isEmpty() ? "" : sighted.details().getFirst().icon();
 	}
 
+	/** The second picture of an exchange, or empty when the first detail is an ordinary one. */
+	private static String resultIcon(Sighted sighted) {
+		return sighted.details().isEmpty() ? "" : sighted.details().getFirst().resultIcon();
+	}
+
+	/** The arrow between the two, and how much room it takes. */
+	private static final String EXCHANGE_ARROW = "\u2192";
+	private static final int ARROW_WIDTH = 6;
+
+	/**
+	 * Where the detail text starts: past one picture normally, past picture-arrow-picture for an
+	 * exchange. Derived from the same three widths the components are placed with, so the text
+	 * cannot drift out of step with what is drawn to its left.
+	 */
+	private static int detailTextX(Sighted sighted) {
+		if (detailIcon(sighted).isBlank()) return CONTENT_X;
+		if (resultIcon(sighted).isBlank()) return NAME_X;
+		return NAME_X + ARROW_WIDTH + GAP + ICON_DRAWN + 3;
+	}
+
 	/** As wide as the card is, or as wide as the bar it is sitting under. */
 	private static int cardWidth(Sighted sighted) {
 		return sighted.underBossBar() ? BOSS_BAR_WIDTH : WIDTH;
@@ -390,7 +417,7 @@ public final class TipHud {
 
 	/** How much room the second line has, which depends on whether a picture is using its start. */
 	private static int detailWidth(Sighted sighted) {
-		return cardWidth(sighted) - PADDING - (detailIcon(sighted).isBlank() ? CONTENT_X : NAME_X);
+		return cardWidth(sighted) - PADDING - detailTextX(sighted);
 	}
 
 	/**
@@ -514,8 +541,7 @@ public final class TipHud {
 		// of picture-then-words rather than a line of text with something stuck on the front. Its
 		// text starts where the name does; without a picture the line keeps the full width.
 		Detail detail = detailOf(sighted);
-		boolean detailIcon = !detailIcon(sighted).isBlank();
-		int detailTextX = detailIcon ? NAME_X : CONTENT_X;
+		int detailTextX = detailTextX(sighted);
 		int detailWidth = detailWidth(sighted);
 		int detailIconY = detailY + (LINE - ICON_BOX) / 2;
 
@@ -605,6 +631,20 @@ public final class TipHud {
 				.bounds(CONTENT_X - ICON_INSET, detailIconY, ICON_BOX, ICON_BOX)
 				.prop(ComponentType.PROP_SCALE, String.valueOf(ICON_SCALE))
 				.prop(ComponentType.PROP_ITEM_ID, detailIcon(sighted))
+				.build())
+			// The arrow and the second picture, built always and usually empty for the same
+			// reason the first picture is: a component that exists from the start can be updated
+			// in place, where one that appeared on first sight of a sheep would rebuild the card.
+			.component(new ComponentBuilder(EXCHANGE_ARROW_ID, ComponentType.TEXT)
+				.bounds(NAME_X, detailY, ARROW_WIDTH, 9)
+				.prop(ComponentType.PROP_TEXT, resultIcon(sighted).isBlank() ? "" : EXCHANGE_ARROW)
+				.prop(ComponentType.PROP_COLOR, DETAIL_COLOR)
+				.prop(ComponentType.PROP_SHADOW, "true")
+				.build())
+			.component(new ComponentBuilder(RESULT_ICON_ID, ComponentType.ITEM_ICON)
+				.bounds(NAME_X + ARROW_WIDTH + GAP - ICON_INSET, detailIconY, ICON_BOX, ICON_BOX)
+				.prop(ComponentType.PROP_SCALE, String.valueOf(ICON_SCALE))
+				.prop(ComponentType.PROP_ITEM_ID, resultIcon(sighted))
 				.build())
 			.component(new ComponentBuilder(DETAIL_ID, ComponentType.TEXT)
 				.bounds(detailTextX, detailY, detailWidth, 9)

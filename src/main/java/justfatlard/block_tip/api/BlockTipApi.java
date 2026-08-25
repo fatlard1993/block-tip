@@ -74,14 +74,25 @@ public final class BlockTipApi {
 	 *
 	 * @param line the words, or empty where the picture is the whole answer
 	 * @param icon an item id to draw at the head of the line, or empty for none
+	 * @param resultIcon a second item id, drawn after an arrow: what holding the first one gets you
 	 */
-	public record Tip(String line, String icon) {
+	public record Tip(String line, String icon, String resultIcon) {
+		/** A tip with words and at most one picture, which is nearly all of them. */
+		public Tip(String line, String icon) {
+			this(line, icon, "");
+		}
+
 		public static Tip of(String line) {
-			return new Tip(line, "");
+			return new Tip(line, "", "");
 		}
 
 		public boolean isBlank() {
-			return this.line.isBlank() && this.icon.isBlank();
+			return this.line.isBlank() && this.icon.isBlank() && this.resultIcon.isBlank();
+		}
+
+		/** Two pictures with an arrow between: hold this, get that. */
+		public boolean isExchange() {
+			return !this.icon.isBlank() && !this.resultIcon.isBlank();
 		}
 	}
 

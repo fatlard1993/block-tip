@@ -148,6 +148,11 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		// the thing that was never missing.
 		// First, because the card draws the picture belonging to the tip that starts the row and
 		// this is the only entity tip that has one.
+		// Before breeding: what it gives you now is more use than what it eats later, and the
+		// card only has room for one picture row.
+		BlockTipApi.Tip exchange = Interactions.of(entity);
+		if (exchange != null) details.add(exchange);
+
 		BlockTipApi.Tip feed = Breeding.of(entity);
 		if (feed != null) details.add(feed);
 
