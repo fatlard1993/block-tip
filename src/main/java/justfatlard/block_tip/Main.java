@@ -23,6 +23,36 @@ public class Main implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		TipCommand.register();
+
+		// The same choice the command offers, on the settings screen, reading and writing the
+		// mod's own store so the two never disagree.
+		java.util.Map<String, String> modes = new java.util.LinkedHashMap<>();
+		modes.put("always", "Always");
+		modes.put("sneaking", "When sneaking");
+		modes.put("off", "Off");
+		justfatlard.pandorical.api.PandoricalApi.settings().group(MOD_ID, "Block Tip")
+			.choice("mode", "Show tips", modes, "always")
+			.describe("Names what you are looking at, at the top of the screen")
+			.backedBy(
+				player -> TipPreferences.modeOf(player.level(), player.getUUID()).name().toLowerCase(java.util.Locale.ROOT),
+				(player, mode) -> {
+					TipPreferences.Mode chosen = TipPreferences.Mode.valueOf(mode.toUpperCase(java.util.Locale.ROOT));
+					TipPreferences.set(player.level(), player.getUUID(), chosen);
+					if (chosen != TipPreferences.Mode.ALWAYS) TipHud.clear(player);
+				});
+		// The blocks a player has muted, readable and prunable without the command; muting stays
+		// a look and a command, since the block to mute is the one on screen.
+		justfatlard.pandorical.api.PandoricalApi.settings().group(MOD_ID, "Block Tip")
+			.list("hidden", "Hidden blocks",
+				player -> {
+					java.util.Map<String, String> named = new java.util.LinkedHashMap<>();
+					for (String id : TipPreferences.hiddenBy(player.level(), player.getUUID())) {
+						named.put(id, blockName(id));
+					}
+					return named;
+				},
+				(player, id) -> TipPreferences.show(player.level(), player.getUUID(), id))
+			.describe("Never named on a card. Look at a block and /blocktip hide to add one");
 		VanillaTips.register();
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -58,6 +88,14 @@ public class Main implements ModInitializer {
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> Drops.forget());
 
 		LOGGER.info("[{}] Loaded (server-side with Pandorical)", MOD_ID);
+	}
+
+	/** A block's name as the game knows it, or the id when the game does not know the block. */
+	private static String blockName(String id) {
+		net.minecraft.resources.Identifier key = net.minecraft.resources.Identifier.tryParse(id);
+		if (key == null) return id;
+		return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(key)
+			.map(block -> block.getName().getString()).orElse(id);
 	}
 
 	private static void tick(ServerPlayer player) {

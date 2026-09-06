@@ -305,6 +305,39 @@ public final class BlockTipApi {
 		String describe(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player);
 	}
 
+	private static final List<NameProvider> NAME_PROVIDERS = new ArrayList<>();
+
+	/**
+	 * The card's title, for a block whose registered name is not the answer.
+	 *
+	 * <p>Most blocks are what their name says. Some are one block id standing in for many
+	 * things - a slab made of two other slabs, a stand that holds any tool - and there the name
+	 * is a category and the thing in front of the player has a name of its own that only the
+	 * block in the world can give. Return null to keep the block's name; the first provider that
+	 * answers wins. Like {@link #describe}, this costs a call on every look, so return early.
+	 */
+	public static void name(NameProvider provider) {
+		NAME_PROVIDERS.add(provider);
+	}
+
+	/** What the card should call this block, or null for its own name. */
+	public static String nameFor(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player) {
+		for (NameProvider provider : NAME_PROVIDERS) {
+			try {
+				String name = provider.name(level, pos, state, player);
+				if (name != null && !name.isBlank()) return name;
+			} catch (RuntimeException e) {
+				broke(provider, e);
+			}
+		}
+		return null;
+	}
+
+	@FunctionalInterface
+	public interface NameProvider {
+		String name(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player);
+	}
+
 	@FunctionalInterface
 	public interface TipIllustrator {
 		Tip describe(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player);
@@ -355,5 +388,40 @@ public final class BlockTipApi {
 	@FunctionalInterface
 	public interface EntityTipProvider {
 		String describe(Entity entity, ServerPlayer player);
+	}
+
+	private static final List<EntityNamer> ENTITY_NAMERS = new ArrayList<>();
+
+	/**
+	 * What to call the thing in front of you, when its own name is wrong. Return null to leave it.
+	 *
+	 * <p>For an entity that is one thing wearing another's type: a working cart is a chest cart
+	 * underneath, and the game introduces it as one. A custom name would fix the card, and it
+	 * did, but the game also floats a custom name over anything under the crosshair, and a cart
+	 * with its name hanging in the air over it is a named pet, not a cart.
+	 */
+	public static void nameEntity(EntityNamer namer) {
+		ENTITY_NAMERS.add(namer);
+	}
+
+	/**
+	 * The name to show for an entity, or null for its own. Registration order decides.
+	 *
+	 * @hidden used by block-tip itself
+	 */
+	public static String nameForEntity(Entity entity, ServerPlayer player) {
+		for (EntityNamer namer : ENTITY_NAMERS) {
+			try {
+				String name = namer.name(entity, player);
+				if (name != null && !name.isBlank()) return name;
+			} catch (Exception | LinkageError error) {
+				broke(namer, error);
+			}
+		}
+		return null;
+	}
+
+	public interface EntityNamer {
+		String name(Entity entity, ServerPlayer player);
 	}
 }

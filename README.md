@@ -146,6 +146,9 @@ BlockTipApi.line("minecraft:crafter", "Keeps one of each - the pattern stays");
 // or worked out from the block in front of you
 BlockTipApi.describe((level, pos, state, player) -> ...);
 
+// The card's title, for a block whose registered name is a category: return null to keep it
+BlockTipApi.name((level, pos, state, player) -> ...);
+
 // or about whatever is walking around
 BlockTipApi.describeEntity((entity, player) -> ...);
 
@@ -181,36 +184,13 @@ Refusing leaves the block named, because a name is what anybody standing there c
 
 ## Pandorical
 
-Block Tip runs server-side, and Pandorical is a hard dependency (`fabric.mod.json`): the server will not load this mod without it. The card is a Pandorical HUD, which is the reason there is nothing to install on a client that already has Pandorical.
+Block Tip runs server-side, and Pandorical is required: the server will not load this mod without it. The card is a Pandorical HUD, which is the reason there is nothing to install on a client that already has Pandorical.
 
 No Block Tip jar is needed on a client.
 
-## Installation
+## Development
 
-Install server-side alongside its declared dependencies (see `fabric.mod.json`); connecting clients need only Pandorical. Version targets live in `gradle.properties` (Minecraft, loader, Fabric API) and `fabric.mod.json` (Java).
-
-## Key Files
-
-| File | Responsibility |
-|------|---------------|
-| `Main.java` | Entry point; the tick that asks what each player is looking at |
-| `Sighted.java` | The raycast, and reducing a block or creature to a picture and a name |
-| `TipHud.java` | The card, and only sending it when the answer changes |
-| `Advice.java` | What you should be holding, and whether what you hold will do |
-| `Drops.java` | What breaking it actually gives you, asked of the loot table |
-| `BossBars.java` | Whether the game is already drawing a bar for this creature |
-| `TipPreferences.java` | Who opted out and what they hid, kept in saved data |
-| `TipCommand.java` | `/blocktip`, and the per-player list of blocks not to name |
-
-## Building
-
-Block Tip builds against Pandorical's live source, not a published artifact: `settings.gradle` includes `../pandorical`. Check both out side by side or the build fails before it starts.
-
-```bash
-./gradlew build
-```
-
-The built jar will be in `build/libs/`.
+Installing, building and the map of the source are in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 

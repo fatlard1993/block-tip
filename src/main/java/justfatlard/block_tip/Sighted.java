@@ -129,7 +129,8 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		// one turns up when it has something to add.
 		if (ownBar && details.isEmpty() && modName.isEmpty()) return NOTHING;
 
-		return new Sighted("", icon, textOf(entity.getDisplayName()), details, false, underBar,
+		String named = BlockTipApi.nameForEntity(entity, player);
+		return new Sighted("", icon, named != null ? named : textOf(entity.getDisplayName()), details, false, underBar,
 			modName, Advice.Mark.NONE, "", healthFractionOf(entity));
 	}
 
@@ -210,7 +211,9 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 
 		Advice advice = Advice.on(player, level, pos, state);
 
-		return new Sighted(id, icon, textOf(block.getName()), tips,
+		// A mod may know this block by a better name than its registry does.
+		String named = BlockTipApi.nameFor(level, pos, state, player);
+		return new Sighted(id, icon, named != null ? named : textOf(block.getName()), tips,
 			VanillaTips.mobsCanSpawnOn(level, pos, state), BossBars.anyShowing(player), ModNames.of(id),
 			advice.mark(), advice.toolItem(), NO_HEALTH);
 	}

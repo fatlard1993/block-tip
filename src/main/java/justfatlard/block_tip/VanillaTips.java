@@ -1,5 +1,10 @@
 package justfatlard.block_tip;
 
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import justfatlard.block_tip.api.BlockTipApi;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -73,6 +78,22 @@ public final class VanillaTips {
 		for (int fact = 0; fact < FACTS.length; fact++) {
 			BlockTipApi.describe(BELOW_THE_MODS - fact, FACTS[fact]);
 		}
+		BlockTipApi.name(VanillaTips::whoseHead);
+	}
+
+	/**
+	 * A player's head is named for the player, the way the item in your hand is. The block is
+	 * only ever "Player Head"; whose it is lives in the block entity, and the game itself never
+	 * says, having no card of its own to say it on.
+	 */
+	private static String whoseHead(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player) {
+		if (!state.is(Blocks.PLAYER_HEAD) && !state.is(Blocks.PLAYER_WALL_HEAD)) return null;
+		if (!(level.getBlockEntity(pos) instanceof SkullBlockEntity skull)) return null;
+		ResolvableProfile owner = skull.getOwnerProfile();
+		if (owner == null) return null;
+		return owner.name()
+			.map(name -> Component.translatable("block.minecraft.player_head.named", name).getString())
+			.orElse(null);
 	}
 
 	/**
