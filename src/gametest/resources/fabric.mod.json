@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "block-tip-gametest",
+	"version": "1.0.0",
+	"name": "Block Tip game tests",
+	"description": "The pictures for the readme and the mod page.",
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"justfatlard.block_tip.gametest.Showcase"
+		]
+	},
+	"depends": {
+		"block-tip": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}

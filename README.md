@@ -2,6 +2,11 @@
 
 A Minecraft Fabric mod. Names what you are looking at.
 
+## Screenshots
+
+![A field of wheat: the card names it and its growth is a green edge along the bottom](crop-card.png)
+![A cow called Buttercup: what it follows, what it can be milked for, and how it is doing](creature-card.png)
+
 ## What This Mod Does
 
 Look at anything. Its picture and its name appear in a small card at the top of the screen, clear of the effect icons and under any boss bar that happens to be up.
