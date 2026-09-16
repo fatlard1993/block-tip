@@ -62,7 +62,6 @@ public final class VanillaTips {
 	private static final int BELOW_THE_MODS = -100;
 
 	private static final BlockTipApi.TipProvider[] FACTS = {
-		(level, pos, state, player) -> crop(state),
 		(level, pos, state, player) -> spawner(level, pos),
 		(level, pos, state, player) -> furnace(level, pos, state),
 		(level, pos, state, player) -> container(level, pos, state),
@@ -100,9 +99,10 @@ public final class VanillaTips {
 	 * How far along it is, as a percentage.
 	 *
 	 * <p>Wheat looks nearly ripe for a long time before it is, and "growing" says only what the
-	 * player can already see. A number says whether this is worth coming back for tonight or next
-	 * week, and it is a percentage rather than a stage count so beetroot and wheat can be read the
-	 * same way despite counting to four and to seven.
+	 * player can already see. How far along it is says whether this is worth coming back for
+	 * tonight or next week, drawn as the green fill along the bottom of the card, and it is a
+	 * fraction rather than a stage count so beetroot and wheat read the same way despite counting
+	 * to four and to seven.
 	 *
 	 * @return -1 for anything that does not grow in stages
 	 */
@@ -133,13 +133,6 @@ public final class VanillaTips {
 
 	private static int percentOf(BlockState state, IntegerProperty age, int maxAge) {
 		return Math.round(state.getValue(age) * 100.0F / maxAge);
-	}
-
-	private static String crop(BlockState state) {
-		int grown = growthPercent(state);
-		if (grown < 0) return null;
-
-		return grown + "% grown";
 	}
 
 	/**

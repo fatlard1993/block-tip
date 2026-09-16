@@ -41,6 +41,7 @@ public final class TipHud {
 	private static final String DETAIL_ICON_ID = "detail-icon";
 	private static final String EXCHANGE_ARROW_ID = "exchange-arrow";
 	private static final String RESULT_ICON_ID = "result-icon";
+	private static final String EXCHANGE_HELD_ID = "exchange-held";
 	private static final String MARK_ID = "mark";
 	private static final String SPAWN_ID = "spawn";
 	private static final String SOURCE_ID = "source";
@@ -179,6 +180,8 @@ public final class TipHud {
 	 * card already declined to print health under a boss bar for the same reason.
 	 */
 	private static final String HEALTH_COLOR = "#FFD03A3A";
+	/** Green, for a crop: how far it has grown, full when it is ready to pick. */
+	private static final String GROWTH_COLOR = "#FF5CC23A";
 	private static final String PANEL_BORDER_NONE = "none";
 
 	/** Dimmer than the name, because it is the footnote and not the answer. */
@@ -276,9 +279,9 @@ public final class TipHud {
 		UUID id = player.getUUID();
 		Sighted current = showing.get(id);
 		if (current == null) return;
-		// The bottom edge is the mob's health while one is in front of you, and the two would
-		// otherwise take turns writing to it every tick.
-		if (current.health() >= 0F) return;
+		// The bottom edge is the mob's health or the crop's growth while one is in front of you,
+		// and the two would otherwise take turns writing to it every tick.
+		if (current.gauge() != Sighted.Gauge.NONE) return;
 
 		int width = Math.round(cardWidth(current) * fraction);
 		Integer last = progressWidth.get(id);
@@ -324,6 +327,8 @@ public final class TipHud {
 					ComponentType.PROP_TEXT, resultIcon(sighted).isBlank() ? "" : EXCHANGE_ARROW)),
 				new ComponentUpdate(RESULT_ICON_ID, Map.of(
 					ComponentType.PROP_ITEM_ID, resultIcon(sighted))),
+				new ComponentUpdate(EXCHANGE_HELD_ID, Map.of(
+					ComponentType.PROP_ITEM_ID, trailingHeldIcon(sighted))),
 				new ComponentUpdate(SOURCE_ID, Map.of(ComponentType.PROP_TEXT, sighted.modName())),
 				new ComponentUpdate(TOOL_ID, Map.of(
 					ComponentType.PROP_ITEM_ID, hasToolIcon(sighted) ? sighted.toolItem() : "")),
@@ -340,9 +345,17 @@ public final class TipHud {
 		showing.put(id, sighted);
 	}
 
-	/** How much of the bottom edge is filled: health for a mob, nothing for a block. */
+	/** How much of the bottom edge is filled: health for a mob, growth for a crop, nothing for a block. */
 	private static int barWidth(Sighted sighted) {
-		return sighted.health() < 0F ? 0 : Math.round(cardWidth(sighted) * sighted.health());
+		return sighted.gauge() == Sighted.Gauge.NONE ? 0 : Math.round(cardWidth(sighted) * sighted.fill());
+	}
+
+	private static String barColor(Sighted sighted) {
+		return switch (sighted.gauge()) {
+			case HEALTH -> HEALTH_COLOR;
+			case GROWTH -> GROWTH_COLOR;
+			case NONE -> PROGRESS_COLOR;
+		};
 	}
 
 	/**
@@ -353,10 +366,10 @@ public final class TipHud {
 	 */
 	private static String shapeOf(Sighted sighted) {
 		return (hasDetail(sighted) ? "d" : "-")
-			// The bar's colour is set when the card is built, so block and mob are different shapes
-			+ (sighted.health() >= 0F ? "h" : "-")
+			// The bar's colour is set when the card is built, so block, crop and mob are different shapes
+			+ sighted.gauge().name().charAt(0)
 			+ (detailIcon(sighted).isBlank() ? "-" : "p")
-			+ (resultIcon(sighted).isBlank() ? "-" : "x")
+			+ (resultIcon(sighted).isBlank() ? "-" : exchangeLeads(sighted) ? "x" : "t")
 			+ (sighted.underBossBar() ? "b" : "-")
 			+ (sighted.modName().isBlank() ? "-" : "m")
 			+ (hasToolIcon(sighted) ? "i" : "-")
@@ -390,9 +403,32 @@ public final class TipHud {
 		return sighted.details().isEmpty() ? "" : sighted.details().getFirst().icon();
 	}
 
-	/** The second picture of an exchange, or empty when the first detail is an ordinary one. */
+	/**
+	 * The card's one exchange: a thing to hold and what it gets you, drawn as picture, arrow,
+	 * picture. At the head of the row when it is the first detail; otherwise at the far end of
+	 * the row, after whatever the first detail says.
+	 */
+	private static BlockTipApi.Tip exchangeOf(Sighted sighted) {
+		for (BlockTipApi.Tip tip : sighted.details()) {
+			if (!tip.resultIcon().isBlank()) return tip;
+		}
+		return null;
+	}
+
+	private static boolean exchangeLeads(Sighted sighted) {
+		return !sighted.details().isEmpty() && !sighted.details().getFirst().resultIcon().isBlank();
+	}
+
+	/** The second picture of the exchange, or empty when there is none. */
 	private static String resultIcon(Sighted sighted) {
-		return sighted.details().isEmpty() ? "" : sighted.details().getFirst().resultIcon();
+		BlockTipApi.Tip exchange = exchangeOf(sighted);
+		return exchange == null ? "" : exchange.resultIcon();
+	}
+
+	/** The first picture of an exchange at the end of the row; one at the head uses the row's own. */
+	private static String trailingHeldIcon(Sighted sighted) {
+		BlockTipApi.Tip exchange = exchangeOf(sighted);
+		return exchange == null || exchangeLeads(sighted) ? "" : exchange.icon();
 	}
 
 	/** The arrow between the two, and how much room it takes. */
@@ -406,8 +442,13 @@ public final class TipHud {
 	 */
 	private static int detailTextX(Sighted sighted) {
 		if (detailIcon(sighted).isBlank()) return CONTENT_X;
-		if (resultIcon(sighted).isBlank()) return NAME_X;
+		if (!exchangeLeads(sighted)) return NAME_X;
 		return NAME_X + ARROW_WIDTH + GAP + ICON_DRAWN + 3;
+	}
+
+	/** Where an exchange at the end of the row starts: its first picture's left edge. */
+	private static int trailingExchangeX(Sighted sighted) {
+		return cardWidth(sighted) - PADDING - (ICON_DRAWN + 3 + ARROW_WIDTH + GAP + ICON_DRAWN);
 	}
 
 	/** As wide as the card is, or as wide as the bar it is sitting under. */
@@ -417,7 +458,9 @@ public final class TipHud {
 
 	/** How much room the second line has, which depends on whether a picture is using its start. */
 	private static int detailWidth(Sighted sighted) {
-		return cardWidth(sighted) - PADDING - detailTextX(sighted);
+		int end = !resultIcon(sighted).isBlank() && !exchangeLeads(sighted)
+			? trailingExchangeX(sighted) - GAP : cardWidth(sighted) - PADDING;
+		return end - detailTextX(sighted);
 	}
 
 	/**
@@ -545,6 +588,12 @@ public final class TipHud {
 		int detailWidth = detailWidth(sighted);
 		int detailIconY = detailY + (LINE - ICON_BOX) / 2;
 
+		// The exchange's arrow follows its first picture: the row's own at the head of the row,
+		// or one of its own at the far end.
+		int exchangeX = exchangeLeads(sighted) ? CONTENT_X : trailingExchangeX(sighted);
+		int arrowX = exchangeX + ICON_DRAWN + 3;
+		int resultX = arrowX + ARROW_WIDTH + GAP;
+
 		// The end of the name line is only reserved for what is actually going there, each piece
 		// stacking inward from the right: a vanilla block that asks for no tool gives the whole
 		// width back to its name.
@@ -587,8 +636,7 @@ public final class TipHud {
 			// later update can reach, and this one is at nothing wide almost all of the time.
 			.component(new ComponentBuilder(PROGRESS_ID, ComponentType.SPRITE)
 				.bounds(0, height - PROGRESS_HEIGHT, barWidth(sighted), PROGRESS_HEIGHT)
-				.prop(ComponentType.PROP_COLOR,
-					sighted.health() >= 0F ? HEALTH_COLOR : PROGRESS_COLOR)
+				.prop(ComponentType.PROP_COLOR, barColor(sighted))
 				// Pushed every tick, so it should land where it is told rather than spend three
 				// ticks easing toward a width that has already moved on.
 				.prop(ComponentType.PROP_INTERP_TICKS, "1")
@@ -635,14 +683,19 @@ public final class TipHud {
 			// The arrow and the second picture, built always and usually empty for the same
 			// reason the first picture is: a component that exists from the start can be updated
 			// in place, where one that appeared on first sight of a sheep would rebuild the card.
+			.component(new ComponentBuilder(EXCHANGE_HELD_ID, ComponentType.ITEM_ICON)
+				.bounds(exchangeX - ICON_INSET, detailIconY, ICON_BOX, ICON_BOX)
+				.prop(ComponentType.PROP_SCALE, String.valueOf(ICON_SCALE))
+				.prop(ComponentType.PROP_ITEM_ID, trailingHeldIcon(sighted))
+				.build())
 			.component(new ComponentBuilder(EXCHANGE_ARROW_ID, ComponentType.TEXT)
-				.bounds(NAME_X, detailY, ARROW_WIDTH, 9)
+				.bounds(arrowX, detailY, ARROW_WIDTH, 9)
 				.prop(ComponentType.PROP_TEXT, resultIcon(sighted).isBlank() ? "" : EXCHANGE_ARROW)
 				.prop(ComponentType.PROP_COLOR, DETAIL_COLOR)
 				.prop(ComponentType.PROP_SHADOW, "true")
 				.build())
 			.component(new ComponentBuilder(RESULT_ICON_ID, ComponentType.ITEM_ICON)
-				.bounds(NAME_X + ARROW_WIDTH + GAP - ICON_INSET, detailIconY, ICON_BOX, ICON_BOX)
+				.bounds(resultX - ICON_INSET, detailIconY, ICON_BOX, ICON_BOX)
 				.prop(ComponentType.PROP_SCALE, String.valueOf(ICON_SCALE))
 				.prop(ComponentType.PROP_ITEM_ID, resultIcon(sighted))
 				.build())

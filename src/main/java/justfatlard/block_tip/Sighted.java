@@ -56,20 +56,28 @@ import net.minecraft.world.phys.Vec3;
  *        {@link Advice.Mark}
  * @param toolItem the tool to draw beside the mark, or empty when there is
  *        nothing worth showing
+ * @param gauge what the card's bottom edge measures while nobody is mining
+ * @param fill how full that edge is, from 0 to 1; meaningless under {@link Gauge#NONE}
  */
 public record Sighted(String blockId, String itemId, String nameKey, List<BlockTipApi.Tip> details,
 		boolean spawnable, boolean underBossBar, String modName, Advice.Mark mark, String toolItem,
-		float health) {
+		Gauge gauge, float fill) {
 
-	/** What {@link #health} carries for anything that cannot be hurt. */
-	public static final float NO_HEALTH = -1F;
+	/**
+	 * What the bottom edge of the card is saying when it is not the break bar.
+	 *
+	 * <p>A creature's health, or how far a crop has grown: the things that have a fill of their
+	 * own. A crop takes no time to break and has no health, so the edge that would sit empty over
+	 * it says how ripe it is instead, which is the one thing a player looks at a crop to learn.
+	 */
+	public enum Gauge { NONE, HEALTH, GROWTH }
 
 	/** How far a tip will reach. A little past arm's length, so it answers before you arrive. */
 	private static final double RANGE = 6.0;
 
 	/** Nothing in range, or nothing worth naming. */
 	public static final Sighted NOTHING =
-		new Sighted("", "", "", List.of(), false, false, "", Advice.Mark.NONE, "", NO_HEALTH);
+		new Sighted("", "", "", List.of(), false, false, "", Advice.Mark.NONE, "", Gauge.NONE, 0F);
 
 	public boolean isNothing() {
 		return this.nameKey.isEmpty();
@@ -93,9 +101,15 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 			player, eye, stop, player.getBoundingBox().expandTowards(end.subtract(eye)).inflate(1.0),
 			Sighted::worthNaming, eye.distanceToSqr(stop));
 
-		if (entityHit != null) return ofEntity(player, entityHit.getEntity());
+		if (entityHit != null) return ofEntityOrItsBlock(player, entityHit.getEntity());
 		if (blockHit.getType() == HitResult.Type.BLOCK) return ofBlock(player, blockHit.getBlockPos());
 		return NOTHING;
+	}
+
+	private static Sighted ofEntityOrItsBlock(ServerPlayer player, Entity entity) {
+		if (!entity.entityTags().contains(BlockTipApi.STAND_IN)) return ofEntity(player, entity);
+		BlockPos wearing = entity.blockPosition();
+		return player.level().getBlockState(wearing).isAir() ? NOTHING : ofBlock(player, wearing);
 	}
 
 	private static boolean worthNaming(Entity entity) {
@@ -130,8 +144,9 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		if (ownBar && details.isEmpty() && modName.isEmpty()) return NOTHING;
 
 		String named = BlockTipApi.nameForEntity(entity, player);
+		float health = healthFractionOf(entity);
 		return new Sighted("", icon, named != null ? named : textOf(entity.getDisplayName()), details, false, underBar,
-			modName, Advice.Mark.NONE, "", healthFractionOf(entity));
+			modName, Advice.Mark.NONE, "", health < 0F ? Gauge.NONE : Gauge.HEALTH, Math.max(0F, health));
 	}
 
 	/**
@@ -147,15 +162,13 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		// The bar over the top of the screen is a health bar with a number's worth of precision
 		// already. Printing the same health under it would be the card's only contribution being
 		// the thing that was never missing.
-		// First, because the card draws the picture belonging to the tip that starts the row and
-		// this is the only entity tip that has one.
-		// Before breeding: what it gives you now is more use than what it eats later, and the
-		// card only has room for one picture row.
-		BlockTipApi.Tip exchange = Interactions.of(entity);
-		if (exchange != null) details.add(exchange);
-
+		// The food leads, with its picture, and the exchange rides the far end of the same row:
+		// wheat, the word, then bucket to milk.
 		BlockTipApi.Tip feed = Breeding.of(entity);
 		if (feed != null) details.add(feed);
+
+		BlockTipApi.Tip exchange = Interactions.of(entity);
+		if (exchange != null) details.add(exchange);
 
 		String added = BlockTipApi.detailForEntity(entity, player);
 		if (added != null && !added.isBlank()) details.add(BlockTipApi.Tip.of(added));
@@ -180,13 +193,13 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 	/**
 	 * How much fight is left, as a fraction, for the bar along the bottom of the card.
 	 *
-	 * <p>{@link #NO_HEALTH} for anything that cannot be hurt, which is how the card knows to leave
-	 * the bottom edge to the break bar instead.
+	 * <p>Negative for anything that cannot be hurt, which is how the card knows to leave the
+	 * bottom edge to the break bar instead.
 	 */
 	private static float healthFractionOf(Entity entity) {
-		if (!(entity instanceof LivingEntity living)) return NO_HEALTH;
+		if (!(entity instanceof LivingEntity living)) return -1F;
 		float max = living.getMaxHealth();
-		if (max <= 0F) return NO_HEALTH;
+		if (max <= 0F) return -1F;
 		return Math.clamp(living.getHealth() / max, 0F, 1F);
 	}
 
@@ -213,9 +226,11 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 
 		// A mod may know this block by a better name than its registry does.
 		String named = BlockTipApi.nameFor(level, pos, state, player);
+		int grown = VanillaTips.growthPercent(state);
 		return new Sighted(id, icon, named != null ? named : textOf(block.getName()), tips,
 			VanillaTips.mobsCanSpawnOn(level, pos, state), BossBars.anyShowing(player), ModNames.of(id),
-			advice.mark(), advice.toolItem(), NO_HEALTH);
+			advice.mark(), advice.toolItem(),
+			grown < 0 ? Gauge.NONE : Gauge.GROWTH, Math.max(0, grown) / 100F);
 	}
 
 	/**

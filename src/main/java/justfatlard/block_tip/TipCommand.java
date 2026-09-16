@@ -173,7 +173,7 @@ public final class TipCommand {
 			"+  right tool, too soft - it will break but drop nothing",
 			"\u2718  wrong tool, or a crop that is not ready",
 			"*  optional: the tool shown is quicker, or keeps the block itself",
-			"\u2665  how much fight is left in it")) {
+			"a red edge along the bottom  how much fight is left in it; green, how far a crop has grown")) {
 			said(player, line);
 		}
 		return 1;

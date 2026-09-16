@@ -43,6 +43,14 @@ public final class BlockTipApi {
 	private static final Logger LOGGER = LoggerFactory.getLogger("block-tip");
 
 	/**
+	 * Scoreboard tag for an entity that is really a block wearing a costume: a hidden mob a block
+	 * uses to borrow a renderer, a display entity a block uses to draw itself. Looking at a tagged
+	 * entity names the block it stands in rather than the entity, so the costume never shows
+	 * through on the card.
+	 */
+	public static final String STAND_IN = "block_tip:stand_in";
+
+	/**
 	 * Providers already reported as broken.
 	 *
 	 * <p>A provider that throws throws on every look, four times a second, for as long as somebody
