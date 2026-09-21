@@ -182,6 +182,9 @@ BlockTipApi.icon("your-mod:worldgen_only_block", "minecraft:oak_leaves");
 
 // the card's title for a creature whose own name is wrong: return null to keep it
 BlockTipApi.nameEntity((entity, player) -> ...);
+
+// how far a plant of yours has grown, 0 to 1, for the fill along the bottom: negative to say nothing
+BlockTipApi.growth((level, pos, state, player) -> ...);
 ```
 
 An entity that is really a block drawing itself - a hidden mob borrowing a renderer, a display entity - can carry the scoreboard tag `block_tip:stand_in` (`BlockTipApi.STAND_IN`). Looking at it then names the block it stands in, so the costume never shows through on the card.
@@ -190,10 +193,19 @@ The illustrated form draws an item at the head of the detail line, in the same c
 
 The entity form is for the same silence in a thing that moves. [Player Trade](https://github.com/fatlard1993/player-trade) uses it to say *"Sneak-click to trade"* while you are looking at somebody: the gesture is that mod's only front door, and nothing else in the game hints at it. An entity line joins whatever the card already says about the creature - an animal's food, what it gives - rather than replacing it, since they answer different questions and there is only ever the one row. Where several mods have a line for the same creature, the first registered is the one shown.
 
+The green fill along the bottom of a card is read off a block's age property, which is how nearly
+every crop in the game says how far along it is. A plant that keeps its progress somewhere else - a
+block entity, a clock of its own, a record spread over the several blocks it is made of - has no age
+to read, so the crop with the most worth saying was the one that said nothing. `growth` hands the
+card a fraction instead. [Hemp Craft](https://github.com/fatlard1993/hemp-craft) answers it out of
+the plant's own record, so a stalk halfway up fills the bar the same as the root does, it being the
+same plant. The same number decides the tick or cross at the end of the name, so a plant that is
+ready reads as ready the way wheat does.
+
 A mod compiling against this should declare the version it needs as `breaks`, not only `suggests`:
 
 ```json
-"breaks": { "block-tip": "<1.0.0" }
+"breaks": { "block-tip": "<1.1.0" }
 ```
 
 `suggests` is advisory and Fabric does not act on it, and `FabricLoader.isModLoaded` answers whether Block Tip is present, not which one. Without `breaks`, a mod calling a method an older Block Tip does not have fails at registration with a `NoSuchMethodError` the loader turns into a refusal to start, naming your mod rather than the mismatch.

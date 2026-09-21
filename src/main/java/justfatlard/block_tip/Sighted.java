@@ -226,7 +226,7 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 
 		// A mod may know this block by a better name than its registry does.
 		String named = BlockTipApi.nameFor(level, pos, state, player);
-		int grown = VanillaTips.growthPercent(state);
+		int grown = Growth.percent(level, pos, state, player);
 		return new Sighted(id, icon, named != null ? named : textOf(block.getName()), tips,
 			VanillaTips.mobsCanSpawnOn(level, pos, state), BossBars.anyShowing(player), ModNames.of(id),
 			advice.mark(), advice.toolItem(),

@@ -303,6 +303,49 @@ public final class BlockTipApi {
 		return true;
 	}
 
+	private static final List<GrowthProvider> GROWTH_PROVIDERS = new ArrayList<>();
+
+	/**
+	 * How far a block of yours has grown, for the green fill along the bottom of the card.
+	 *
+	 * <p>The fill is worked out from a block's age property, which is how nearly every crop in the
+	 * game says how far along it is. A mod whose plant keeps its progress somewhere else - a block
+	 * entity, a clock of its own, a record spread over several blocks - has no age to read, so the
+	 * card drew nothing for it and the one crop with something to say was the one that said
+	 * nothing.
+	 *
+	 * <p>A fraction rather than a stage, so a plant that counts to three and one that counts to
+	 * fifteen days read the same way, and so the answer does not depend on how the mod happens to
+	 * count. Return a negative number for a block that is not yours or is not growing; the first
+	 * provider that answers wins, and vanilla's own reading is used when none does. Asked on every
+	 * look, like {@link #describe}, so answer it cheaply.
+	 */
+	public static void growth(GrowthProvider provider) {
+		GROWTH_PROVIDERS.add(provider);
+	}
+
+	/**
+	 * How grown the thing in front of the player is, from 0 to 1, or -1 if nobody knows.
+	 *
+	 * @hidden used by block-tip itself
+	 */
+	public static float grownFraction(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player) {
+		for (GrowthProvider provider : GROWTH_PROVIDERS) {
+			try {
+				float grown = provider.grown(level, pos, state, player);
+				if (grown >= 0.0F) return Math.min(1.0F, grown);
+			} catch (Exception | LinkageError error) {
+				broke(provider, error);
+			}
+		}
+		return -1.0F;
+	}
+
+	@FunctionalInterface
+	public interface GrowthProvider {
+		float grown(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player);
+	}
+
 	@FunctionalInterface
 	public interface Inspector {
 		boolean mayInspect(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player);

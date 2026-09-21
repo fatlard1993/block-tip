@@ -50,7 +50,7 @@ record Advice(Mark mark, String toolItem) {
 
 	 */
 	static Advice on(ServerPlayer player, ServerLevel level, BlockPos pos, BlockState state) {
-		int grown = VanillaTips.growthPercent(state);
+		int grown = Growth.percent(level, pos, state, player);
 		if (grown >= 0) return new Advice(grown >= 100 ? Mark.GOOD : Mark.BAD, "");
 
 		ItemStack held = player.getMainHandItem();
