@@ -4,15 +4,21 @@
   ],
   "versions": {
     "1.1.0": [
-      "A plant can now report how far along it is, so crops from other mods fill the card's green edge and show the ready mark even when they keep their progress somewhere other than the block itself."
+      "A plant can report how far along it is, so crops from other mods fill the card's green edge.",
+      "That works even when they keep their progress somewhere other than the block."
     ],
     "1.0.1": [
-      "A crop's progress left the detail line for a green fill along the bottom edge of the card, and an animal shows every food it takes, one at a time, so a whole pen reads as one answer.",
-      "A block whose own name is really a category can be named properly, and there is a setting for how much the card says."
+      "A crop's progress moved from the detail line to a green fill along the card's bottom edge.",
+      "An animal shows every food it takes, one at a time, so a whole pen reads as one answer.",
+      "A block whose own name is really a category can be named properly.",
+      "There is a setting for how much the card says."
     ],
     "1.0.0": [
-      "The card itself: picture, name, and one line underneath, at the top of the screen and see-through enough to leave the view alone. Creatures get one too, called by whatever name they have been given.",
-      "It says seven things the game tracks and never shows you, the one worth having being whether the block you are looking at is dark enough to spawn mobs. Nothing to install: the card is drawn by Pandorical."
+      "The card itself: picture, name and one line, at the top of the screen and see-through.",
+      "Creatures get one too, called by whatever name they have been given.",
+      "Seven things the game tracks and never shows you.",
+      "The one worth having: whether the block you are looking at is dark enough to spawn mobs.",
+      "Nothing to install. The card is drawn by Pandorical."
     ]
   }
 }
