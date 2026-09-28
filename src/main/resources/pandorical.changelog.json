@@ -10,7 +10,7 @@
     "1.0.1": [
       "A crop's progress moved from the detail line to a green fill along the card's bottom edge.",
       "An animal shows every food it takes, one at a time, so a whole pen reads as one answer.",
-      "A block whose own name is really a category can be named properly.",
+      "A block whose name is really a category gets its own name on the card.",
       "There is a setting for how much the card says."
     ],
     "1.0.0": [
