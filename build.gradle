@@ -83,6 +83,8 @@ jar {
 // window leaves the HUD laid out for the small one: the hotbar ends up a postage stamp in the top
 // left. Size the window to the picture instead.
 tasks.matching { it.name == "runClientGameTest" }.configureEach {
+	// Silent: OpenAL's null device, the same as gametest.gradle gives the rest of the suite.
+	environment("ALSOFT_DRIVERS", "null")
 	args("--width", "1920", "--height", "1080")
 }
 
