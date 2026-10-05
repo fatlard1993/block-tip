@@ -193,14 +193,7 @@ The illustrated form draws an item at the head of the detail line, in the same c
 
 The entity form is for the same silence in a thing that moves. [Player Trade](https://github.com/fatlard1993/player-trade) uses it to say *"Sneak-click to trade"* while you are looking at somebody: the gesture is that mod's only front door, and nothing else in the game hints at it. An entity line joins whatever the card already says about the creature - an animal's food, what it gives - rather than replacing it, since they answer different questions and there is only ever the one row. Where several mods have a line for the same creature, the first registered is the one shown.
 
-The green fill along the bottom of a card is read off a block's age property, which is how nearly
-every crop in the game says how far along it is. A plant that keeps its progress somewhere else - a
-block entity, a clock of its own, a record spread over the several blocks it is made of - has no age
-to read, so the crop with the most worth saying was the one that said nothing. `growth` hands the
-card a fraction instead. [Hemp Craft](https://github.com/fatlard1993/hemp-craft) answers it out of
-the plant's own record, so a stalk halfway up fills the bar the same as the root does, it being the
-same plant. The same number decides the tick or cross at the end of the name, so a plant that is
-ready reads as ready the way wheat does.
+The green fill along the bottom of a card is read off a block's age property, which is how nearly every crop in the game says how far along it is. A plant that keeps its progress somewhere else - a block entity, a clock of its own, a record spread over the several blocks it is made of - has no age to read, so the crop with the most worth saying was the one that said nothing. `growth` hands the card a fraction instead. [Hemp Craft](https://github.com/fatlard1993/hemp-craft) answers it out of the plant's own record, so a stalk halfway up fills the bar the same as the root does, it being the same plant. The same number decides the tick or cross at the end of the name, so a plant that is ready reads as ready the way wheat does.
 
 A mod compiling against this should declare the version it needs as `breaks`, not only `suggests`:
 
