@@ -28,9 +28,9 @@ public final class Showcase implements FabricClientGameTest {
 			connection.waitForChunksRender();
 			server.waitFor(s -> PandoricalApi.isAvailable(connection.getServerPlayer()));
 
-			server.runCommand("gamerule doDaylightCycle false");
-			server.runCommand("gamerule doWeatherCycle false");
-			server.runCommand("gamerule doMobSpawning false");
+			server.runCommand("gamerule advance_time false");
+			server.runCommand("gamerule advance_weather false");
+			server.runCommand("gamerule spawn_mobs false");
 			server.runCommand("time set noon");
 			server.runCommand("gamemode creative @a");
 			// Every recipe unlocked up front: otherwise the wheat that goes in hand for the second
