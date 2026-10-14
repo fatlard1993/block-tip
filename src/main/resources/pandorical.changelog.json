@@ -3,6 +3,9 @@
     "Look at anything and a small card at the top of the screen gives you its picture, its name, and the one thing about it that looking cannot tell you."
   ],
   "versions": {
+    "1.1.1": [
+      "Release notes rewritten to read plainly; nothing in play changes."
+    ],
     "1.1.0": [
       "A plant can report how far along it is, so crops from other mods fill the card's green edge.",
       "That works even when they keep their progress somewhere other than the block."
