@@ -9,50 +9,25 @@ A Minecraft Fabric mod. Names what you are looking at.
 
 ## What This Mod Does
 
-Look at anything. Its picture and its name appear in a small card at the top of the screen, clear of the effect icons and under any boss bar that happens to be up.
+Look at a block or a creature within six blocks and its picture and name appear in a small card at the top of the screen, clear of the effect icons and under any boss bar that is up.
 
-Blocks and creatures both. A creature is named by its display name, so a villager who has been given one is introduced by it.
-
-The name is the answer. Everything else on the card is one of two things: a mark you can ignore at a glance, or a fact that would otherwise cost you something to not know.
-
-## What Keeps It Small
-
-The suite it belongs to is forty mods deep and most of that content is unlabelled: the game will happily show you a block it has never mentioned by name. "What is that" is a question everybody asks, whether the answer is a word they have not read before or a block they have not seen before.
-
-The card began as a picture and a word and nothing else, and that was the right shape until the mods around it started having things to say that no name could carry. What replaced the rule is not a longer card - it is a smaller budget, spent in a fixed order:
-
-- **One card, two rows.** The second row exists only when something is on it.
-- **One line, shared.** Facts are ranked, packed onto that line while they fit, and cut from the least important end when they do not. A mod that wants a paragraph wants a book.
-- **Marks, not sentences.** What is true of half the world - it is dark enough to spawn things here, that tool will not do - is a glyph in a reserved slot, not words. Glyphs are read at a glance and ignored just as fast; a sentence has to be read every time.
-- **Nothing that repeats the game.** No health under a health bar, no name under a boss bar, no progress bar for a furnace whose flame you can see from across the room.
-
-The limits are in the code rather than in this paragraph: the line is packed against a measured width and the collection stops at six facts, so the card physically cannot grow into a panel however many mods have opinions about a block.
+The card has two rows at most. The first is the name; the second, when there is anything to say, is one line of facts, as many as fit, least important cut first. Marks at the ends of the name line answer "will this tool do?" and "can mobs spawn here?" at a glance.
 
 ## Turning It Off
 
 | Command | Effect |
 |---------|--------|
 | `/blocktip` | Flip it, whichever way it currently is |
-| `/blocktip on` | On, definitely |
-| `/blocktip off` | Off, definitely |
-| `/blocktip sneak` | Only while sneaking, which is already the gesture for paying attention to one block |
-| `/blocktip marks` | What the glyphs on the card mean, said in chat |
+| `/blocktip on` | On |
+| `/blocktip off` | Off |
+| `/blocktip sneak` | Only while sneaking |
+| `/blocktip marks` | What the marks on the card mean, said in chat |
 
-Bare toggle first, because that is what someone types when the tips are in the way and they want them gone now. The explicit forms exist so that telling a child "type slash blocktip on" cannot end with it off.
+Anyone can use them, and each changes only your own card. It is on by default. The bare toggle gives back whatever you had, so turning tips off and on again returns you to sneak mode if that is where you were.
 
-Anyone can use them, and each changes only your own card.
-
-The same choice is on Block Tip's page in the Pandorical mods menu, as **Show tips**: Always, When sneaking, or Off. It reads and writes the same stored preference as the command, so the two never disagree.
-
-It is on by default and the preference is stored per player, as the list of people who opted **out**. A feature you have to switch on is a feature for people who already knew about it, which is the opposite of the point here.
-
-The bare toggle gives back whatever you had: turning tips off and on again returns you to sneak mode if that is where you were, rather than quietly costing you the setting.
-
-Upgrading from a version before sneak mode and hidden blocks starts this list empty - the old preferences are stored in a different shape under a different name, and are left alone on disk rather than half-read. Anyone who had turned tips off turns them off once more.
+The same choice is on Block Tip's page in the Pandorical mods menu, as **Show tips**: Always, When sneaking or Off. It is the same setting as the command.
 
 ## Blocks You Already Know
-
-All of it or none of it is a blunt choice. The player who is tired of being told what stone is still wants to be told what the thing a mod just added is, so the list is per block and per player.
 
 | Command | Effect |
 |---------|--------|
@@ -63,28 +38,20 @@ All of it or none of it is a blunt choice. The player who is tired of being told
 | `/blocktip show all` | Forget the whole list |
 | `/blocktip hidden` | Read the list back |
 
-The no-argument forms are the ones anybody uses: the block that has just told you what it is for the hundredth time is already on your screen, and pointing at it beats typing its id. `show` works on a hidden block even though nothing is on screen for it, which is the whole reason it has to be a look and not a card.
-
-Stored per player in the world's saved data, as ids rather than blocks, so uninstalling a mod for a week does not quietly empty the list.
-
-The mods menu page lists the same blocks under **Hidden blocks**, each with a button to bring it back. Adding one stays a look and a command, since the block to hide is the one on screen.
+`show` works by looking at a hidden block even though no card appears for it. The list is per player and survives a mod being uninstalled for a while. The mods menu page lists the same blocks under **Hidden blocks**, each with a button to bring it back.
 
 ## Details Worth Knowing
 
-- **Names arrive in your own language.** The server sends a translation key, not words, so the client says it in whatever language that client is set to. The facts under the name are the server's own words, and a mod's translation key only survives while it is the only fact on the line - two facts joined by a dot are no longer a key anything can look up.
-- **Blocks with no item still get named.** Fire, portals, the top half of a door: those show the name with no picture, which beats a picture of the wrong thing.
-- **Creatures show their pick item.** A spawn egg for a mob, the boat for a boat: whatever middle-click would hand you, which is the picture of the thing by definition. People get a plain head, middle-click having nothing to offer for them.
-- **A player's head is named for its player**, the way the item in your hand is.
-- **Modded things say whose they are.** The mod's name sits small at the far end of the name's line. Vanilla says nothing, since that is what everybody assumes already, and a mod the loader cannot name is given its namespace instead.
-- **Whichever is nearer wins.** A cow standing in front of a wall names the cow, the same rule your eyes are using.
-- **The bottom edge is a gauge.** It fills as the block in front of you gives way. On a creature it is a red bar of the health it has left, and on a crop a green bar of how far it has grown, full when it is ready to pick.
-- **It costs almost nothing.** One raycast per player four times a second, and a packet only when the answer changes. Standing still and staring at a wall sends nothing at all. The break bar is the one thing sent every tick, and only while you are mining.
-- **Spectators get no card.** Looking through walls would name whatever is behind them.
-- **Reach is six blocks**, a little past arm's length, so it answers before you arrive.
+- **Names arrive in your own language.** The facts under the name are in the server's language.
+- **Blocks with no item still get named.** Fire, portals, the top half of a door: name, no picture.
+- **Creatures show what middle-click would give you**: a spawn egg for a mob, the boat for a boat. Players get a plain head. A creature with a name tag is introduced by it.
+- **A player's head is named for its player.**
+- **Modded things say whose they are**: the mod's name sits small at the end of the name line. Vanilla things say nothing.
+- **Whichever is nearer wins.** A cow in front of a wall names the cow.
+- **The bottom edge is a gauge.** It fills as the block you are mining gives way. On a creature it is a red bar of the health it has left, on a crop a green bar of how far it has grown, full when it is ready to pick.
+- **Spectators get no card.**
 
 ## What It Says About Vanilla
-
-A handful of facts the game tracks and never shows, chosen because not knowing each one costs you something:
 
 | Looking at | It says |
 |------------|---------|
@@ -97,131 +64,58 @@ A handful of facts the game tracks and never shows, chosen because not knowing e
 | A hive | **3 bees, honey 4/5** |
 | Farmland | **Watered** or **Dry** |
 
-These are ranked, most specific first, and as many as fit share the line: a furnace is also a container, so a lit furnace with something in it says both, and the machine that knows what it is doing is the one that survives a line with no room left.
+As many as fit share the line, most specific first: a lit furnace with something in it says both what it is doing and how full it is. A redstone power level, from a wire or from what a comparator would read, has a lightning mark in front of it. Container fill is said in quarters, or **Empty**, or **Full**. A loot chest nobody has opened says nothing about its contents, since counting them would roll the loot.
 
-A number of redstone power, from a wire or from what a comparator would read, carries a lightning mark in front of it rather than a word saying which kind of number it is. A container's fill is said in quarters, or **Empty**, or **Full**. A loot chest nobody has opened says nothing about its inside at all: counting its slots would roll its loot on the spot, for whoever happened to open it first.
-
-How far a crop has grown is drawn rather than said, as the green fill along the card's bottom edge: wheat and the other crops, and also stems, nether wart, cocoa and sweet berries.
+Crop growth is the green fill along the bottom edge: wheat and the other crops, stems, nether wart, cocoa and sweet berries.
 
 ### Animals
 
-An animal's line starts with what it breeds on, the food's own picture in front of its name. One that takes several foods shows them in turn, a second and a half each and up to eight of them, and every animal of a kind shows the same food at the same moment, so a pen reads as one answer.
+An animal's line starts with what it breeds on, the food's picture in front of its name. One that takes several foods shows them in turn, a second and a half each and up to eight, every animal of a kind in step.
 
-What it gives you sits at the far end of the same line, as two pictures and an arrow: bucket to milk for a grown cow or goat, bowl to stew for a grown mooshroom, shears to wool of its own colour for a grown sheep that has not been sheared.
+What it gives you sits at the far end of the line, as two pictures and an arrow: bucket to milk for a grown cow or goat, bowl to stew for a grown mooshroom, shears to wool of its colour for a grown sheep that has not been sheared.
 
-### The corner
+### The skull
 
-A skull in the card's top-left corner means mobs can appear on top of that block. Since the light rewrite they need block light of exactly zero, which nobody can check by eye: a torch two blocks too far leaves a square that looks lit and spawns creepers all night.
-
-It has a corner to itself rather than a line, because it is the one thing here that is true of half the world. As a line it was the tip you read most and needed least, and it lost every argument with a tip that had something particular to say - a dark chest reported how full it was and never mentioned what could appear on top of it. In the corner it is checkable at a glance, ignorable just as fast, and true at the same time as everything else on the card.
-
-It sits on the corner of the block's own picture rather than in a column of its own, so it costs the card no width and cannot drag the name sideways as it comes and goes from block to block.
+A skull on the top-left corner of the block's picture means mobs can spawn on top of that block: the space above it has a block light level of zero.
 
 ## What To Hold
 
-The end of the name line answers one question: will what is in my hand do? A glyph says the verdict, and a picture says what would be better, and neither appears when the answer is "anything will". `/blocktip marks` says the same table in chat, for anyone who is in the game rather than in this file.
+The end of the name line says whether what is in your hand will do. Nothing appears when anything will.
 
 | At the end of the name | Means |
 |------------------------|-------|
 | Green tick | The drop is safe with what you are holding, or the crop is ripe |
-| Red plus, with a tool | Right kind of tool, not hard enough. The errand is a furnace, not your hotbar |
+| Red plus, with a tool | Right kind of tool, not hard enough: it will break but drop nothing |
 | Red cross | Wrong tool, and swinging now loses the block. On a crop, that it is not ready yet |
-| Yellow star, with a tool | Nothing is at stake. That tool would be quicker, or would hand you the block instead of what it breaks into |
+| Yellow star, with a tool | Nothing is at stake. That tool would be quicker, or would give you the block itself |
 | An enchanted book | This block drops **nothing** without silk touch |
 | Shears | Shears give you the block itself: the leaves, the cobweb, the grass |
 
-Red means swinging costs you something; yellow and green mean it does not. Each meaning has its own glyph as well as its own colour, because red against yellow is the one distinction a good share of players cannot make, and a screenshot in grey makes it for nobody.
-
-Both of those last two are read from the block's own loot table rather than from a list kept here, so they stay right for whatever a data pack retunes or a mod adds. The question asked is "does the block itself come back", never "does silk touch change the drop" - the second is true of stone and of every ore in the game, and answering it would put a book on half the world.
-
-Each kind of block is asked once and remembered until data packs reload.
+Red means swinging costs you something; yellow and green mean it does not. Each has its own shape as well as its own colour. The book and shears are read from the block's loot table, so they stay right for data packs and modded blocks.
 
 ## Boss Bars
 
-A boss bar and this card live in the same corner of the screen. Left alone, a dragon gets named twice in the same place by two things that have clearly never met.
+When a boss bar is up, the card moves below it and takes its width. Looking at the creature that owns the bar, the card drops the health, and a vanilla boss such as the dragon gets no card at all, since the bar already says everything. A modded boss still gets a card, showing which mod it is from.
 
-So whenever a bar is up, the card moves to the next row of that stack and takes the bar's width, which reads as one more line of the same thing rather than somebody else's window over the top of it. That is two questions, not one, and the answers differ:
+## For Other Mods
 
-- **Is a bar on screen at all?** Decides where the card sits. True far more often than you would think - a village, a raid, a timer somebody set - and this was the case that went wrong first: a card that only checked whether it was *looking at* a boss sat squarely across the bar every other time.
-- **Does the bar belong to what I am looking at?** Decides what the card says. The health goes, because the bar is a health bar drawn larger and more precisely than a card could. And where that leaves nothing to add - a vanilla dragon, whose name and health are the whole card - it does not appear at all. A modded boss still gets one, because which mod a boss came from is a thing the bar never says.
+Other mods can add to the card through `BlockTipApi`:
 
-Neither question is answerable in general. A boss bar is a field inside whatever owns it, with no tag and no central list; only the ones made by `/bossbar` can be found from outside. So mods say so themselves:
+- `line` - a fixed line for a block id
+- `describe` / `illustrate` - a line, or a line with an item picture, worked out from the block in front of the player
+- `describeEntity` - a line for a creature
+- `name` / `nameEntity` - replace the card's title
+- `icon` - a picture for a block with no item
+- `growth` - a 0-to-1 growth fraction for a plant that has no age property
+- `bossBar` / `bossBarCheck` - tell the card a boss bar is up
+- `inspection` - let a claim or protection mod stop the card reading inside other players' blocks (the name still shows)
+- the `block_tip:stand_in` scoreboard tag, for an entity that is really a block
 
-```java
-// this creature draws its own bar
-BlockTipApi.bossBar("your-mod:your_boss");
-
-// this player has a bar of mine up right now, whatever they are looking at
-BlockTipApi.bossBarCheck(player -> myBars.isShowing(player));
-```
-
-## Adding A Line
-
-A card names a thing. Some things also have a fact that cannot be seen by looking at them, and those are exactly the ones nobody learns: a crafter that keeps a template looks like a crafter, a piston set to push three looks like a piston.
-
-Any mod can add one line, compiled against Block Tip and guarded on it being present:
-
-```java
-// true wherever the block stands
-BlockTipApi.line("minecraft:crafter", "Keeps one of each - the pattern stays");
-
-// or worked out from the block in front of you
-BlockTipApi.describe((level, pos, state, player) -> ...);
-
-// The card's title, for a block whose registered name is a category: return null to keep it
-BlockTipApi.name((level, pos, state, player) -> ...);
-
-// or about whatever is walking around
-BlockTipApi.describeEntity((entity, player) -> ...);
-
-// or as a picture, where a picture says it better
-BlockTipApi.illustrate((level, pos, state, player) -> new BlockTipApi.Tip("Keeps a template", "minecraft:bread"));
-
-// the picture for a block that has no item of its own
-BlockTipApi.icon("your-mod:worldgen_only_block", "minecraft:oak_leaves");
-
-// the card's title for a creature whose own name is wrong: return null to keep it
-BlockTipApi.nameEntity((entity, player) -> ...);
-
-// how far a plant of yours has grown, 0 to 1, for the fill along the bottom: negative to say nothing
-BlockTipApi.growth((level, pos, state, player) -> ...);
-```
-
-An entity that is really a block drawing itself - a hidden mob borrowing a renderer, a display entity - can carry the scoreboard tag `block_tip:stand_in` (`BlockTipApi.STAND_IN`). Looking at it then names the block it stands in, so the costume never shows through on the card.
-
-The illustrated form draws an item at the head of the detail line, in the same column as the block's own picture. [Crafter Template](https://github.com/fatlard1993/crafter-template) uses it to show what a crafter is loaded to make: a picture of the loaf beats nine ingredients the player has to solve in their head, and it is the same width whatever the recipe. The picture belongs to the line that starts the row: it is read off the winning tip rather than kept in a field of its own, so it cannot be drawn at the head of somebody else's sentence.
-
-The entity form is for the same silence in a thing that moves. [Player Trade](https://github.com/fatlard1993/player-trade) uses it to say *"Sneak-click to trade"* while you are looking at somebody: the gesture is that mod's only front door, and nothing else in the game hints at it. An entity line joins whatever the card already says about the creature - an animal's food, what it gives - rather than replacing it, since they answer different questions and there is only ever the one row. Where several mods have a line for the same creature, the first registered is the one shown.
-
-The green fill along the bottom of a card is read off a block's age property, which is how nearly every crop in the game says how far along it is. A plant that keeps its progress somewhere else - a block entity, a clock of its own, a record spread over the several blocks it is made of - has no age to read, so the crop with the most worth saying was the one that said nothing. `growth` hands the card a fraction instead. [Hemp Craft](https://github.com/fatlard1993/hemp-craft) answers it out of the plant's own record, so a stalk halfway up fills the bar the same as the root does, it being the same plant. The same number decides the tick or cross at the end of the name, so a plant that is ready reads as ready the way wheat does.
-
-A mod compiling against this should declare the version it needs as `breaks`, not only `suggests`:
-
-```json
-"breaks": { "block-tip": "<1.1.0" }
-```
-
-`suggests` is advisory and Fabric does not act on it, and `FabricLoader.isModLoaded` answers whether Block Tip is present, not which one. Without `breaks`, a mod calling a method an older Block Tip does not have fails at registration with a `NoSuchMethodError` the loader turns into a refusal to start, naming your mod rather than the mismatch.
-
-One line each, deliberately. The card stays readable because it is small; a mod that wants a paragraph wants a book.
-
-Several mods can have something to say about the same block, and the card shows as many of their lines as its width will hold, separated by a dot. Priority decides the order, so what falls off the end of a full line is the least important thing on it. Keep a line short enough to share.
-
-## What It Will Not Say
-
-The card reads block entities: how full a chest is, the number a comparator would give, whether a furnace has run dry, what a spawner makes. Every switch above belongs to the person looking, and none to the person looked at - so on a server where somebody else's chest is not your business, a claim or protection mod can close that:
-
-```java
-BlockTipApi.inspection((level, pos, state, player) -> claims.mayOpen(player, pos));
-```
-
-Refusing leaves the block named, because a name is what anybody standing there can already see. What it withholds is everything the card would otherwise have read out of the inside of it.
+Signatures, examples and the `breaks` version to declare are in [DEVELOPMENT.md](DEVELOPMENT.md#api-for-other-mods). [Crafter Template](https://github.com/fatlard1993/crafter-template), [Player Trade](https://github.com/fatlard1993/player-trade) and [Hemp Craft](https://github.com/fatlard1993/hemp-craft) are among the mods that use it.
 
 ## Pandorical
 
-Block Tip runs server-side, and Pandorical is required: the server will not load this mod without it. The card is a Pandorical HUD, which is the reason there is nothing to install on a client that already has Pandorical.
-
-No Block Tip jar is needed on a client. A vanilla client sees no card, and `/blocktip` still works for it.
+Block Tip runs server-side, and Pandorical is required on the server. The card is a Pandorical HUD, so a client with Pandorical needs no Block Tip jar. A vanilla client sees no card, though `/blocktip` still works for it.
 
 ## Development
 
