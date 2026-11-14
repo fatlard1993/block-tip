@@ -411,6 +411,44 @@ public final class BlockTipApi {
 		ENTITY_PROVIDERS.add(provider);
 	}
 
+	private static final List<SliceProvider> SLICES = new ArrayList<>();
+
+	/**
+	 * A line that stays up for as long as it has something to say, whatever the player is looking
+	 * at: how far a lead has run, what a tool is set to, a timer. Return null to say nothing, and it
+	 * goes.
+	 *
+	 * <p>Drawn under the card when there is one and in its place when there is not, one line each,
+	 * in registration order, and only when the player has tips on at all. Asked four times a second
+	 * for every player, so cheap, and null early.
+	 */
+	public static void slice(SliceProvider provider) {
+		SLICES.add(provider);
+	}
+
+	/**
+	 * Every slice with something to say for this player, in order.
+	 *
+	 * @hidden used by block-tip itself
+	 */
+	public static List<String> slicesFor(ServerPlayer player) {
+		List<String> lines = new ArrayList<>();
+		for (SliceProvider provider : SLICES) {
+			try {
+				String line = provider.line(player);
+				if (line != null && !line.isBlank()) lines.add(line);
+			} catch (Exception | LinkageError error) {
+				broke(provider, error);
+			}
+		}
+		return lines;
+	}
+
+	@FunctionalInterface
+	public interface SliceProvider {
+		String line(ServerPlayer player);
+	}
+
 	/**
 	 * The line to add for an entity, or null.
 	 *
@@ -439,6 +477,50 @@ public final class BlockTipApi {
 	@FunctionalInterface
 	public interface EntityTipProvider {
 		String describe(Entity entity, ServerPlayer player);
+	}
+
+	private static final List<EntityMeter> ENTITY_METERS = new ArrayList<>();
+
+	/**
+	 * A second bar for a creature, drawn over its health along the bottom of the card.
+	 *
+	 * <p>For a reserve that runs down and gets topped up: fuel, charge, whatever the creature
+	 * spends. A number in the detail line has to be read; a bar beside the health bar is seen, and
+	 * the one thing a player wants to know about a reserve is whether it is nearly gone.
+	 *
+	 * <p>Return null for a creature that is not yours. The first meter that answers wins. Asked on
+	 * the look tick, so answer it cheaply.
+	 */
+	public static void meterEntity(EntityMeter meter) {
+		ENTITY_METERS.add(meter);
+	}
+
+	/**
+	 * The second bar to draw for an entity, or null.
+	 *
+	 * @hidden used by block-tip itself
+	 */
+	public static Meter meterFor(Entity entity, ServerPlayer player) {
+		for (EntityMeter meter : ENTITY_METERS) {
+			try {
+				Meter measured = meter.measure(entity, player);
+				if (measured != null) return measured;
+			} catch (Exception | LinkageError error) {
+				broke(meter, error);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param fill  how full, from 0 to 1
+	 * @param color the bar's colour as {@code #AARRGGBB}, e.g. {@code "#FFE8B820"}
+	 */
+	public record Meter(float fill, String color) {}
+
+	@FunctionalInterface
+	public interface EntityMeter {
+		Meter measure(Entity entity, ServerPlayer player);
 	}
 
 	private static final List<EntityNamer> ENTITY_NAMERS = new ArrayList<>();

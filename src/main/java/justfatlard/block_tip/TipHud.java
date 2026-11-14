@@ -64,7 +64,7 @@ public final class TipHud {
 	private static final float ICON_SCALE = (float) ICON_DRAWN / ICON_BOX;
 	private static final int ICON_INSET = (ICON_BOX - ICON_DRAWN) / 2;
 
-	private static final int PADDING = 3;
+	static final int PADDING = 3;
 
 	/**
 	 * Wide enough to finish a long name. "Deepslate Diamond Ore" beside a mod's name, a tool and a
@@ -125,11 +125,11 @@ public final class TipHud {
 	private static final int NAME_X = CONTENT_X + ICON_DRAWN + 3;
 
 	/** A row tall enough for the icon to sit inside without pushing the text off its baseline. */
-	private static final int LINE = 10;
+	static final int LINE = 10;
 	private static final int HEIGHT_ONE_LINE = PADDING * 2 + LINE;
 
 	/** Down from the top edge, clear of the effect icons that live up there. */
-	private static final int BELOW_TOP = 8;
+	static final int BELOW_TOP = 8;
 
 	/**
 	 * Where the card goes when the thing in front of you has a bar of its own.
@@ -158,7 +158,7 @@ public final class TipHud {
 	 * to be looked past: a wash dark enough to keep white text legible against snow or sky, and
 	 * nothing else. No bevel, no frame, just enough ground for the letters to sit on.
 	 */
-	private static final String PANEL_BACKGROUND = "#80000000";
+	static final String PANEL_BACKGROUND = "#80000000";
 
 	/**
 	 * The break bar: the card's own bottom edge, filling as the block gives way.
@@ -170,6 +170,11 @@ public final class TipHud {
 	private static final String PROGRESS_ID = "progress";
 	private static final int PROGRESS_HEIGHT = 2;
 	private static final String PROGRESS_COLOR = "#FFE0E0E0";
+	/** A mod's second bar for a creature, sat on top of the health bar so the two read as a pair. */
+	private static final String METER_ID = "meter";
+	/** The meter's whole length, faint, so an empty reserve reads as empty rather than as no bar. */
+	private static final String METER_TRACK_ID = "meter-track";
+	private static final String METER_TRACK_ALPHA = "40";
 	/**
 	 * The same two pixels, red, when the thing in front of you can bleed.
 	 *
@@ -182,7 +187,7 @@ public final class TipHud {
 	private static final String HEALTH_COLOR = "#FFD03A3A";
 	/** Green, for a crop: how far it has grown, full when it is ready to pick. */
 	private static final String GROWTH_COLOR = "#FF5CC23A";
-	private static final String PANEL_BORDER_NONE = "none";
+	static final String PANEL_BORDER_NONE = "none";
 
 	/** Dimmer than the name, because it is the footnote and not the answer. */
 	private static final String DETAIL_COLOR = "#FFA0A0A0";
@@ -338,7 +343,13 @@ public final class TipHud {
 					ComponentType.PROP_TEXT, markText(sighted),
 					ComponentType.PROP_COLOR, markColor(sighted))),
 				new ComponentUpdate(PROGRESS_ID, Map.of(
-					ComponentType.PROP_WIDTH, String.valueOf(barWidth(sighted))))
+					ComponentType.PROP_WIDTH, String.valueOf(barWidth(sighted)))),
+				new ComponentUpdate(METER_TRACK_ID, Map.of(
+					ComponentType.PROP_WIDTH, String.valueOf(sighted.meter() == null ? 0 : cardWidth(sighted)),
+					ComponentType.PROP_COLOR, meterTrackColor(sighted))),
+				new ComponentUpdate(METER_ID, Map.of(
+					ComponentType.PROP_WIDTH, String.valueOf(meterWidth(sighted)),
+					ComponentType.PROP_COLOR, meterColor(sighted)))
 			));
 		}
 
@@ -348,6 +359,19 @@ public final class TipHud {
 	/** How much of the bottom edge is filled: health for a mob, growth for a crop, nothing for a block. */
 	private static int barWidth(Sighted sighted) {
 		return sighted.gauge() == Sighted.Gauge.NONE ? 0 : Math.round(cardWidth(sighted) * sighted.fill());
+	}
+
+	private static int meterWidth(Sighted sighted) {
+		return sighted.meter() == null ? 0 : Math.round(cardWidth(sighted) * Math.clamp(sighted.meter().fill(), 0F, 1F));
+	}
+
+	private static String meterColor(Sighted sighted) {
+		return sighted.meter() == null ? PROGRESS_COLOR : sighted.meter().color();
+	}
+
+	private static String meterTrackColor(Sighted sighted) {
+		String color = meterColor(sighted);
+		return color.length() == 9 ? "#" + METER_TRACK_ALPHA + color.substring(3) : color;
 	}
 
 	private static String barColor(Sighted sighted) {
@@ -373,7 +397,8 @@ public final class TipHud {
 			+ (sighted.underBossBar() ? "b" : "-")
 			+ (sighted.modName().isBlank() ? "-" : "m")
 			+ (hasToolIcon(sighted) ? "i" : "-")
-			+ (hasMark(sighted) ? "k" : "-");
+			+ (hasMark(sighted) ? "k" : "-")
+			+ (sighted.meter() == null ? "-" : "g");
 	}
 
 	/** How tall the card has to be, in rows: the name, and the detail line when there is one. */
@@ -569,8 +594,29 @@ public final class TipHud {
 		return !markText(sighted).isEmpty();
 	}
 
+	/** How tall a card for this is. A meter takes a strip of its own under the last row, so it sits clear of the pictures there. */
+	private static int heightOf(Sighted sighted) {
+		return HEIGHT_ONE_LINE + (rowsOf(sighted) - 1) * LINE + (sighted.meter() == null ? 0 : PROGRESS_HEIGHT);
+	}
+
+	private static int topOf(Sighted sighted) {
+		return sighted.underBossBar() ? BOSS_BAR_NEXT_ROW : BELOW_TOP;
+	}
+
+	/** Where the card up for this player ends, down from the top of the screen; -1 with no card. Slices hang from here. */
+	static int bottomOf(UUID player) {
+		Sighted sighted = showing.get(player);
+		return sighted == null ? -1 : topOf(sighted) + heightOf(sighted);
+	}
+
+	/** How wide the card up for this player is, or a card's ordinary width with none. */
+	static int widthOf(UUID player) {
+		Sighted sighted = showing.get(player);
+		return sighted == null ? WIDTH : cardWidth(sighted);
+	}
+
 	private static void show(ServerPlayer player, Sighted sighted) {
-		int height = HEIGHT_ONE_LINE + (rowsOf(sighted) - 1) * LINE;
+		int height = heightOf(sighted);
 		int width = cardWidth(sighted);
 
 		// The text sits on the first row; the icon's box is centred on that same row, which puts
@@ -626,7 +672,7 @@ public final class TipHud {
 
 		HudBuilder hud = new HudBuilder(OVERLAY_ID)
 			.anchor("top_center")
-			.offset(0, sighted.underBossBar() ? BOSS_BAR_NEXT_ROW : BELOW_TOP)
+			.offset(0, topOf(sighted))
 			.component(new ComponentBuilder(PANEL_ID, ComponentType.PANEL)
 				.bounds(0, 0, width, height)
 				.prop(ComponentType.PROP_BACKGROUND, PANEL_BACKGROUND)
@@ -640,6 +686,14 @@ public final class TipHud {
 				// Pushed every tick, so it should land where it is told rather than spend three
 				// ticks easing toward a width that has already moved on.
 				.prop(ComponentType.PROP_INTERP_TICKS, "1")
+				.build())
+			.component(new ComponentBuilder(METER_TRACK_ID, ComponentType.SPRITE)
+				.bounds(0, height - 2 * PROGRESS_HEIGHT, sighted.meter() == null ? 0 : width, PROGRESS_HEIGHT)
+				.prop(ComponentType.PROP_COLOR, meterTrackColor(sighted))
+				.build())
+			.component(new ComponentBuilder(METER_ID, ComponentType.SPRITE)
+				.bounds(0, height - 2 * PROGRESS_HEIGHT, meterWidth(sighted), PROGRESS_HEIGHT)
+				.prop(ComponentType.PROP_COLOR, meterColor(sighted))
 				.build())
 			// Plain text, like the mark at the other end: a skull is a skull in every language.
 			// Sat on the block icon's top-left corner rather than beside it, so it costs the card

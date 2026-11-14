@@ -104,6 +104,8 @@ Other mods can add to the card through `BlockTipApi`:
 - `line` - a fixed line for a block id
 - `describe` / `illustrate` - a line, or a line with an item picture, worked out from the block in front of the player
 - `describeEntity` - a line for a creature
+- `meterEntity` - a second bar for a creature, drawn over its health: fuel, charge, anything it spends
+- `slice` - a line that stays up under the card, whatever the player is looking at, for as long as it has something to say: how far a lead has run, a timer
 - `name` / `nameEntity` - replace the card's title
 - `icon` - a picture for a block with no item
 - `growth` - a 0-to-1 growth fraction for a plant that has no age property

@@ -89,6 +89,12 @@ BlockTipApi.nameEntity((entity, player) -> ...);
 
 // how far a plant of yours has grown, 0 to 1, for the fill along the bottom: negative to say nothing
 BlockTipApi.growth((level, pos, state, player) -> ...);
+
+// a creature's reserve, as a coloured bar over its health: null for creatures that are not yours
+BlockTipApi.meterEntity((entity, player) -> new BlockTipApi.Meter(0.5F, "#FFE8B820"));
+
+// a line that stays up under the card while it has something to say, whatever is looked at: null to go
+BlockTipApi.slice(player -> holdingALead(player) ? "8.0 blocks out" : null);
 ```
 
 An entity that is really a block drawing itself - a hidden mob borrowing a renderer, a display entity - can carry the scoreboard tag `block_tip:stand_in` (`BlockTipApi.STAND_IN`). Looking at it then names the block it stands in, so the costume never shows through on the card.

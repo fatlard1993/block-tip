@@ -58,10 +58,11 @@ import net.minecraft.world.phys.Vec3;
  *        nothing worth showing
  * @param gauge what the card's bottom edge measures while nobody is mining
  * @param fill how full that edge is, from 0 to 1; meaningless under {@link Gauge#NONE}
+ * @param meter a creature's second bar, drawn over the first, or null
  */
 public record Sighted(String blockId, String itemId, String nameKey, List<BlockTipApi.Tip> details,
 		boolean spawnable, boolean underBossBar, String modName, Advice.Mark mark, String toolItem,
-		Gauge gauge, float fill) {
+		Gauge gauge, float fill, BlockTipApi.Meter meter) {
 
 	/**
 	 * What the bottom edge of the card is saying when it is not the break bar.
@@ -77,7 +78,7 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 
 	/** Nothing in range, or nothing worth naming. */
 	public static final Sighted NOTHING =
-		new Sighted("", "", "", List.of(), false, false, "", Advice.Mark.NONE, "", Gauge.NONE, 0F);
+		new Sighted("", "", "", List.of(), false, false, "", Advice.Mark.NONE, "", Gauge.NONE, 0F, null);
 
 	public boolean isNothing() {
 		return this.nameKey.isEmpty();
@@ -146,7 +147,8 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		String named = BlockTipApi.nameForEntity(entity, player);
 		float health = healthFractionOf(entity);
 		return new Sighted("", icon, named != null ? named : textOf(entity.getDisplayName()), details, false, underBar,
-			modName, Advice.Mark.NONE, "", health < 0F ? Gauge.NONE : Gauge.HEALTH, Math.max(0F, health));
+			modName, Advice.Mark.NONE, "", health < 0F ? Gauge.NONE : Gauge.HEALTH, Math.max(0F, health),
+			BlockTipApi.meterFor(entity, player));
 	}
 
 	/**
@@ -230,7 +232,7 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		return new Sighted(id, icon, named != null ? named : textOf(block.getName()), tips,
 			VanillaTips.mobsCanSpawnOn(level, pos, state), BossBars.anyShowing(player), ModNames.of(id),
 			advice.mark(), advice.toolItem(),
-			grown < 0 ? Gauge.NONE : Gauge.GROWTH, Math.max(0, grown) / 100F);
+			grown < 0 ? Gauge.NONE : Gauge.GROWTH, Math.max(0, grown) / 100F, null);
 	}
 
 	/**

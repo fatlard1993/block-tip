@@ -81,8 +81,10 @@ public class Main implements ModInitializer {
 			}
 		});
 
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
-			TipHud.forget(handler.getPlayer().getUUID()));
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			TipHud.forget(handler.getPlayer().getUUID());
+			Slices.forget(handler.getPlayer().getUUID());
+		});
 
 		// What a block drops is a data pack's answer, so a reload makes ours a guess.
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> Drops.forget());
@@ -99,6 +101,12 @@ public class Main implements ModInitializer {
 	}
 
 	private static void tick(ServerPlayer player) {
+		boolean allowed = card(player);
+		Slices.update(player, allowed);
+	}
+
+	/** The card for this player, put up or taken down; whether they are allowed tips at all, for the slices. */
+	private static boolean card(ServerPlayer player) {
 		ServerLevel level = player.level();
 
 		TipPreferences.Mode mode = TipPreferences.modeOf(level, player.getUUID());
@@ -106,14 +114,14 @@ public class Main implements ModInitializer {
 		if (mode == TipPreferences.Mode.OFF
 			|| (mode == TipPreferences.Mode.SNEAKING && !player.isShiftKeyDown())) {
 			TipHud.clear(player);
-			return;
+			return false;
 		}
 
 		// Spectators are usually looking through things rather than at them, and a
 		// card naming whatever is behind a wall is noise.
 		if (player.isSpectator()) {
 			TipHud.clear(player);
-			return;
+			return false;
 		}
 
 		Sighted sighted = Sighted.inFrontOf(player);
@@ -122,9 +130,10 @@ public class Main implements ModInitializer {
 		// somebody is pointing at when they want it back.
 		if (TipPreferences.hides(level, player.getUUID(), sighted.blockId())) {
 			TipHud.clear(player);
-			return;
+			return true;
 		}
 
 		TipHud.update(player, sighted);
+		return true;
 	}
 }

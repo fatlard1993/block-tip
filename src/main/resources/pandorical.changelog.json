@@ -3,6 +3,10 @@
     "Look at anything and a small card at the top of the screen gives you its picture, its name, and the one thing about it that looking cannot tell you."
   ],
   "versions": {
+    "1.2.0": [
+      "A creature can show a second bar over its health, for the fuel or charge another mod gives it.",
+      "Another mod can keep a line up under the card for as long as it has something to say, such as how far a lead has run, whatever you are looking at."
+    ],
     "1.1.5": [
       "A demo to play in PvP Dimensions' onboarding."
     ],
