@@ -3,6 +3,9 @@
     "Look at anything and a small card at the top of the screen gives you its picture, its name, and the one thing about it that looking cannot tell you."
   ],
   "versions": {
+    "1.2.1": [
+      "A tip that keeps failing logs its stack trace once, not four times a second for as long as somebody looks."
+    ],
     "1.2.0": [
       "A creature can show a second bar over its health, for the fuel or charge another mod gives it.",
       "Another mod can keep a line up under the card for as long as it has something to say, such as how far a lead has run, whatever you are looking at."
