@@ -62,8 +62,10 @@ public class Main implements ModInitializer {
 				try {
 					TipHud.progress(player, BreakProgress.of(player));
 				} catch (Throwable error) {
-					LOGGER.error("[{}] Failed to update break progress for {}",
-						MOD_ID, player.getName().getString(), error);
+					if (firstTime("progress", error)) {
+						LOGGER.error("[{}] Failed to update break progress for {}",
+							MOD_ID, player.getName().getString(), error);
+					}
 				}
 			}
 
@@ -76,7 +78,9 @@ public class Main implements ModInitializer {
 					// Throwable, not Exception. A provider deep enough to overflow the stack throws an
 					// Error, and an Error let out of here does not spoil one card: it ends the tick,
 					// and with it the server. Nothing this mod does is worth that.
-					LOGGER.error("[{}] Failed to update tip for {}", MOD_ID, player.getName().getString(), error);
+					if (firstTime("tip", error)) {
+						LOGGER.error("[{}] Failed to update tip for {}", MOD_ID, player.getName().getString(), error);
+					}
 				}
 			}
 		});
@@ -90,6 +94,20 @@ public class Main implements ModInitializer {
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> Drops.forget());
 
 		LOGGER.info("[{}] Loaded (server-side with Pandorical)", MOD_ID);
+	}
+
+	/**
+	 * Failures already logged, by where they were thrown.
+	 *
+	 * <p>Whatever breaks here breaks again on the next pass, every tick for as long as somebody
+	 * stands there; the first stack trace names the fault and the rest would bury it.
+	 */
+	private static final java.util.Set<String> COMPLAINED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+	private static boolean firstTime(String what, Throwable error) {
+		StackTraceElement[] trace = error.getStackTrace();
+		String where = trace.length > 0 ? trace[0].toString() : "";
+		return COMPLAINED.add(what + '|' + error.getClass().getName() + '|' + where);
 	}
 
 	/** A block's name as the game knows it, or the id when the game does not know the block. */
