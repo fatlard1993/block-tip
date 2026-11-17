@@ -31,6 +31,8 @@ import net.minecraft.world.phys.Vec3;
  *
  * @param itemId the item to draw as the icon, empty when there is nothing
  *        sensible to draw
+ * @param itemComponents the icon's own components, packed by Pandorical's {@code ItemIcons},
+ *        empty to draw the plain item
  * @param blockId the block's registry id, empty for creatures and for nothing:
  *        what a player names when they ask never to be told about this again
  * @param nameKey a translation key where there is one, so the client can say it
@@ -60,7 +62,7 @@ import net.minecraft.world.phys.Vec3;
  * @param fill how full that edge is, from 0 to 1; meaningless under {@link Gauge#NONE}
  * @param meter a creature's second bar, drawn over the first, or null
  */
-public record Sighted(String blockId, String itemId, String nameKey, List<BlockTipApi.Tip> details,
+public record Sighted(String blockId, String itemId, String itemComponents, String nameKey, List<BlockTipApi.Tip> details,
 		boolean spawnable, boolean underBossBar, String modName, Advice.Mark mark, String toolItem,
 		Gauge gauge, float fill, BlockTipApi.Meter meter) {
 
@@ -78,7 +80,7 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 
 	/** Nothing in range, or nothing worth naming. */
 	public static final Sighted NOTHING =
-		new Sighted("", "", "", List.of(), false, false, "", Advice.Mark.NONE, "", Gauge.NONE, 0F, null);
+		new Sighted("", "", "", "", List.of(), false, false, "", Advice.Mark.NONE, "", Gauge.NONE, 0F, null);
 
 	public boolean isNothing() {
 		return this.nameKey.isEmpty();
@@ -146,7 +148,7 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 
 		String named = BlockTipApi.nameForEntity(entity, player);
 		float health = healthFractionOf(entity);
-		return new Sighted("", icon, named != null ? named : textOf(entity.getDisplayName()), details, false, underBar,
+		return new Sighted("", icon, "", named != null ? named : textOf(entity.getDisplayName()), details, false, underBar,
 			modName, Advice.Mark.NONE, "", health < 0F ? Gauge.NONE : Gauge.HEALTH, Math.max(0F, health),
 			BlockTipApi.meterFor(entity, player));
 	}
@@ -223,13 +225,19 @@ public record Sighted(String blockId, String itemId, String nameKey, List<BlockT
 		// of their own, where the alternative is an empty square.
 		String override = BlockTipApi.iconOverride(id);
 		String icon = override != null ? override : iconFor(block);
+		String components = "";
+		ItemStack drawn = override != null ? null : BlockTipApi.iconFor(level, pos, state, player);
+		if (drawn != null) {
+			icon = BuiltInRegistries.ITEM.getKey(drawn.getItem()).toString();
+			components = justfatlard.pandorical.api.ItemIcons.components(drawn, level.registryAccess());
+		}
 
 		Advice advice = Advice.on(player, level, pos, state);
 
 		// A mod may know this block by a better name than its registry does.
 		String named = BlockTipApi.nameFor(level, pos, state, player);
 		int grown = Growth.percent(level, pos, state, player);
-		return new Sighted(id, icon, named != null ? named : textOf(block.getName()), tips,
+		return new Sighted(id, icon, components, named != null ? named : textOf(block.getName()), tips,
 			VanillaTips.mobsCanSpawnOn(level, pos, state), BossBars.anyShowing(player), ModNames.of(id),
 			advice.mark(), advice.toolItem(),
 			grown < 0 ? Gauge.NONE : Gauge.GROWTH, Math.max(0, grown) / 100F, null);

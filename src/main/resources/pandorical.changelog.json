@@ -3,6 +3,9 @@
     "Look at anything and a small card at the top of the screen gives you its picture, its name, and the one thing about it that looking cannot tell you."
   ],
   "versions": {
+    "1.3.0": [
+      "A block can be pictured on the card as exactly what it is, such as a miniature showing its own build rather than the same picture for every one."
+    ],
     "1.2.1": [
       "A tip that keeps failing logs its stack trace once, not four times a second for as long as somebody looks."
     ],

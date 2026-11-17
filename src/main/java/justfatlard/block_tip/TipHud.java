@@ -321,7 +321,8 @@ public final class TipHud {
 			show(player, sighted);
 		} else {
 			PandoricalApi.hud().update(player, OVERLAY_ID, List.of(
-				new ComponentUpdate(ICON_ID, Map.of(ComponentType.PROP_ITEM_ID, sighted.itemId())),
+				new ComponentUpdate(ICON_ID, Map.of(ComponentType.PROP_ITEM_ID, sighted.itemId(),
+					ComponentType.PROP_ITEM_COMPONENTS, sighted.itemComponents())),
 				new ComponentUpdate(LABEL_ID, Map.of(ComponentType.PROP_TEXT_KEY, sighted.nameKey())),
 				new ComponentUpdate(DETAIL_ID, Map.of(
 					detailOf(sighted).joined() ? ComponentType.PROP_TEXT : ComponentType.PROP_TEXT_KEY,
@@ -710,6 +711,7 @@ public final class TipHud {
 				.bounds(CONTENT_X - ICON_INSET, iconY, ICON_BOX, ICON_BOX)
 				.prop(ComponentType.PROP_SCALE, String.valueOf(ICON_SCALE))
 				.prop(ComponentType.PROP_ITEM_ID, sighted.itemId())
+				.prop(ComponentType.PROP_ITEM_COMPONENTS, sighted.itemComponents())
 				.build())
 			.component(new ComponentBuilder(LABEL_ID, ComponentType.TEXT)
 				.bounds(NAME_X, labelY, nameWidth, 9)

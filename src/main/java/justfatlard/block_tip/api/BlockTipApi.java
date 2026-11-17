@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -132,6 +133,37 @@ public final class BlockTipApi {
 	/** @hidden used by block-tip itself */
 	public static String iconOverride(String blockId) {
 		return ICON_OVERRIDES.get(blockId);
+	}
+
+	private static final List<IconProvider> ICON_PROVIDERS = new ArrayList<>();
+
+	/**
+	 * The stack to draw for this one block, where the block's own item is not the picture: a
+	 * miniature as its own build, rather than the same picture for every one. Drawn with its
+	 * components, so whatever the stack shows in a hand shows on the card. Return null to keep the
+	 * block's item; the first provider that answers wins. This costs a call on every look, so
+	 * return early, and hand back only what the card may show: nothing from inside a container.
+	 */
+	public static void icon(IconProvider provider) {
+		ICON_PROVIDERS.add(provider);
+	}
+
+	/** @hidden used by block-tip itself: the stack to draw, or null for the block's own item. */
+	public static ItemStack iconFor(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player) {
+		for (IconProvider provider : ICON_PROVIDERS) {
+			try {
+				ItemStack stack = provider.icon(level, pos, state, player);
+				if (stack != null && !stack.isEmpty()) return stack;
+			} catch (RuntimeException e) {
+				broke(provider, e);
+			}
+		}
+		return null;
+	}
+
+	@FunctionalInterface
+	public interface IconProvider {
+		ItemStack icon(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player);
 	}
 
 	private static final Set<String> BOSS_BARS = new HashSet<>();

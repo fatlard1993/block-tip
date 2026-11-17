@@ -9,7 +9,8 @@
 	"entrypoints": {
 		"fabric-client-gametest": [
 			"justfatlard.block_tip.gametest.Showcase",
-			"justfatlard.block_tip.gametest.SlicesStay"
+			"justfatlard.block_tip.gametest.SlicesStay",
+			"justfatlard.block_tip.gametest.IconStacks"
 		]
 	},
 	"depends": {
