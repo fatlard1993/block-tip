@@ -3,6 +3,9 @@
     "Look at anything and a small card at the top of the screen gives you its picture, its name, and the one thing about it that looking cannot tell you."
   ],
   "versions": {
+    "1.3.1": [
+      "The mods that do the same job are listed as conflicts, so the loader says so at startup, and the readme says why."
+    ],
     "1.3.0": [
       "A block can be pictured on the card as exactly what it is, such as a miniature showing its own build rather than the same picture for every one."
     ],
