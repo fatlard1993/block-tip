@@ -29,6 +29,10 @@
   "mixins": [
     "block-tip.mixins.json"
   ],
+  "conflicts": {
+    "jade": "*",
+    "wthit": "*"
+  },
   "custom": {
     "modmenu": {
       "links": {

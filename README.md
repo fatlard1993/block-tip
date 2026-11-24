@@ -119,6 +119,10 @@ Signatures, examples and the `breaks` version to declare are in [DEVELOPMENT.md]
 
 Block Tip runs server-side, and Pandorical is required on the server. The card is a Pandorical HUD, so a client with Pandorical needs no Block Tip jar. A vanilla client sees no card, though `/blocktip` still works for it.
 
+## Works with other mods
+
+Jade and WTHIT name what you are looking at too, so with either installed you would see two labels; its manifest lists them as conflicts, so the loader says so at startup.
+
 ## Development
 
 Installing, building and the map of the source are in [DEVELOPMENT.md](DEVELOPMENT.md).
